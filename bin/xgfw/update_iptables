@@ -1,0 +1,80 @@
+#!/bin/sh
+
+IPSET_GFWLIST=gfwlist
+IPSET_CHNROUTE=chnroute
+SS_SERVER_PORT=8388
+SS_SERVER=fuckgfw.com
+SS_PORT=1080
+
+
+delrules() {
+  # resume iptables rules
+  iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+  iptables -t nat -D PREROUTING -p udp -j SHADOWSOCKS
+
+  iptables -t nat -F SHADOWSOCKS
+  iptables -t nat -X SHADOWSOCKS
+}
+createSSChain() {
+  # create customer CHAIN SHADOWSOCKS
+  iptables -t nat -N SHADOWSOCKS
+
+  # insert customer CHAIN SHADOWSOCKS before PREROUTING
+  iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS
+  iptables -t nat -I PREROUTING -p tcp -j SHADOWSOCKS
+  # iptables -t nat -D PREROUTING -p udp -j SHADOWSOCKS
+  # iptables -t nat -I PREROUTING -p udp -j SHADOWSOCKS
+
+  # ignore shadowsocks server
+  # iptables -t nat -A SHADOWSOCKS --dport $SS_SERVER_PORT -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d $SS_SERVER -j RETURN
+  # ignore internal ip
+  iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
+  iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
+}
+useChnroute() {
+  # create ipset for CHNROUTE
+  ipset -N $IPSET_CHNROUTE hash:net
+  # ignore chinese ip
+  # for ip in $(cat '/usr/local/gfw/chnroute.txt'); do
+  #   ipset add $IPSET_CHNROUTE $ip
+  # done
+  iptables -t nat -A SHADOWSOCKS -m set --match-set $IPSET_CHNROUTE dst -j RETURN
+  iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -j REDIRECT --to-port $SS_PORT
+}
+useGfwlist() {
+  # create ipset for GFWLIST
+  ipset -N $IPSET_GFWLIST hash:ip
+  # redirect to shadowsocks proxy for GFWLIST domains
+  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_GFWLIST dst -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_GFWLIST dst -j REDIRECT --to-port $SS_PORT
+}
+
+
+case "$1" in
+    del)
+    delrules
+    ;;
+    gfwlist)
+    createSSChain
+    useGfwlist
+    ;;
+    chnroute)
+    createSSChain
+    useChnroute
+    ;;
+    help)
+    echo "Usage: $0 { gfwlist | chnroute | del | help }"
+    ;;
+    *)
+    createSSChain
+    useGfwlist
+    ;;
+esac

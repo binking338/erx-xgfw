@@ -1,0 +1,132 @@
+'\" t
+.\"     Title: ss-nat
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 12/15/2016
+.\"    Manual: Shadowsocks-libev Manual
+.\"    Source: Shadowsocks-libev 2.5.6
+.\"  Language: English
+.\"
+.TH "SS\-NAT" "1" "12/15/2016" "Shadowsocks\-libev 2\&.5\&.6" "Shadowsocks\-libev Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ss-nat \- helper script to setup NAT rules for transparent proxy
+.SH "SYNOPSIS"
+.sp
+\fBss\-nat\fR [\-ouUfh] [\-s \fI<server_ip>\fR] [\-S \fI<server_ip>\fR] [\-l \fI<local_port>\fR] [\-L \fI<local_port>\fR] [\-i \fI<ip_list_file>\fR] [\-a \fI<lan_ips>\fR] [\-b \fI<wan_ips>\fR] [\-w \fI<wan_ips>\fR] [\-e \fI<extra_options>\fR]
+.SH "DESCRIPTION"
+.sp
+\fBShadowsocks\-libev\fR is a lightweight and secure socks5 proxy\&. It is a port of the original shadowsocks created by clowwindy\&. \fBShadowsocks\-libev\fR is written in pure C and takes advantage of libev to achieve both high performance and low resource consumption\&.
+.sp
+\fBss\-nat\fR(1) sets up NAT rules for \fBss\-redir\fR(1) to provide traffic redirection\&. It requires netfilter\(cqs NAT module and \fBiptables\fR(8)\&. For more information, check out \fBshadowsocks\-libev\fR(8) and the following \fIEXAMPLE\fR section\&.
+.SH "OPTIONS"
+.PP
+\-s \fI<server_ip>\fR
+.RS 4
+IP address of shadowsocks remote server
+.RE
+.PP
+\-l \fI<local_port>\fR
+.RS 4
+Port number of shadowsocks local server
+.RE
+.PP
+\-S \fI<server_ip>\fR
+.RS 4
+IP address of shadowsocks remote UDP server
+.RE
+.PP
+\-L \fI<local_port>\fR
+.RS 4
+Port number of shadowsocks local UDP server
+.RE
+.PP
+\-i \fI<ip_list_file>\fR
+.RS 4
+a file whose content is bypassed ip list
+.RE
+.PP
+\-a \fI<lan_ips>\fR
+.RS 4
+LAN IP of access control, need a prefix to define access control mode
+.RE
+.PP
+\-b \fI<wan_ips>\fR
+.RS 4
+WAN IP of will be bypassed
+.RE
+.PP
+\-w \fI<wan_ips>\fR
+.RS 4
+WAN IP of will be forwarded
+.RE
+.PP
+\-e \fI<extra_options>\fR
+.RS 4
+Extra options for iptables
+.RE
+.PP
+\-o
+.RS 4
+Apply the rules to the OUTPUT chain
+.RE
+.PP
+\-u
+.RS 4
+Enable udprelay mode, TPROXY is required
+.RE
+.PP
+\-U
+.RS 4
+Enable udprelay mode, using different IP and ports for TCP and UDP
+.RE
+.PP
+\-f
+.RS 4
+Flush the rules
+.RE
+.PP
+\-h
+.RS 4
+Show this help message and exit
+.RE
+.SH "EXAMPLE"
+.sp
+\fBss\-nat\fR requires \fBiptables\fR(8)\&. Here is an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# Enable NAT rules for shadowsocks,
+# with both TCP and UDP redirection enabled,
+# and applied for both PREROUTING and OUTPUT chains
+root@Wrt:~# ss\-nat \-s 192\&.168\&.1\&.100 \-l 1080 \-u \-o
+
+# Disable and flush all NAT rules for shadowsocks
+root@Wrt:~# ss\-nat \-f
+.fi
+.if n \{\
+.RE
+.\}
+.SH "SEE ALSO"
+.sp
+\fBss\-local\fR(1), \fBss\-server\fR(1), \fBss\-tunnel\fR(1), \fBss\-manager\fR(1), \fBshadowsocks\-libev\fR(8), \fBiptables\fR(8), /etc/shadowsocks\-libev/config\&.json

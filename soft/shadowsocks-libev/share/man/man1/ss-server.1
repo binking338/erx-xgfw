@@ -1,0 +1,218 @@
+'\" t
+.\"     Title: ss-server
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 11/13/2016
+.\"    Manual: Shadowsocks-libev Manual
+.\"    Source: Shadowsocks-libev 2.5.6
+.\"  Language: English
+.\"
+.TH "SS\-SERVER" "1" "11/13/2016" "Shadowsocks\-libev 2\&.5\&.6" "Shadowsocks\-libev Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ss-server \- shadowsocks server, libev port
+.SH "SYNOPSIS"
+.sp
+\fBss\-server\fR [\-AuUv] [\-h|\-\-help] [\-s \fI<server_host>\fR] [\-p \fI<server_port>\fR] [\-l \fI<local_port>\fR] [\-k \fI<password>\fR] [\-m \fI<encrypt_method>\fR] [\-f \fI<pid_file>\fR] [\-t \fI<timeout>\fR] [\-c \fI<config_file>\fR] [\-i \fI<interface>\fR] [\-a \fI<user_name>\fR] [\-d \fI<addr>\fR] [\-n \fI<nofile>\fR] [\-b \fI<local_address] [\-\-fast\-open] [\-\-acl <acl_config>\fR] [\-\-mtu \fI<MTU>\fR] [\-\-manager\-address \fI<path_to_unix_domain>\fR]
+.SH "DESCRIPTION"
+.sp
+\fBShadowsocks\-libev\fR is a lightweight and secure socks5 proxy\&. It is a port of the original shadowsocks created by clowwindy\&. \fBShadowsocks\-libev\fR is written in pure C and takes advantage of libev to achieve both high performance and low resource consumption\&.
+.sp
+\fBShadowsocks\-libev\fR consists of five components\&. \fBss\-server\fR(1) runs on a remote server to provide secured tunnel service\&. For more information, check out \fBshadowsocks\-libev\fR(8)\&.
+.SH "OPTIONS"
+.PP
+\-s \fI<server_host>\fR
+.RS 4
+Set the server\(cqs hostname or IP\&.
+.RE
+.PP
+\-p \fI<server_port>\fR
+.RS 4
+Set the server\(cqs port number\&.
+.RE
+.PP
+\-k \fI<password>\fR
+.RS 4
+Set the password\&. The server and the client should use the same password\&.
+.RE
+.PP
+\-m \fI<encrypt_method>\fR
+.RS 4
+Set the cipher\&.
+.sp
+\fBShadowsocks\-libev\fR
+accepts 21 different ciphers:
+.sp
+table, rc4, rc4\-md5, aes\-128\-cfb, aes\-192\-cfb, aes\-256\-cfb, aes\-128\-ctr, aes\-192\-ctr, aes\-256\-ctr, bf\-cfb, camellia\-128\-cfb, camellia\-192\-cfb, camellia\-256\-cfb, cast5\-cfb, des\-cfb, idea\-cfb, rc2\-cfb, seed\-cfb, salsa20, chacha20 and chacha20\-ietf\&.
+.sp
+The default cipher is
+\fIrc4\-md5\fR\&.
+.sp
+If built with PolarSSL or custom OpenSSL libraries, some of these ciphers may not work\&.
+.RE
+.PP
+\-a \fI<user_name>\fR
+.RS 4
+Run as a specific user\&.
+.RE
+.PP
+\-f \fI<pid_file>\fR
+.RS 4
+Start shadowsocks as a daemon with specific pid file\&.
+.RE
+.PP
+\-t \fI<timeout>\fR
+.RS 4
+Set the socket timeout in seconds\&. The default value is 60\&.
+.RE
+.PP
+\-c \fI<config_file>\fR
+.RS 4
+Use a configuration file\&.
+.sp
+Refer to
+\fBshadowsocks\-libev\fR(8)
+\fICONFIG FILE\fR
+section for more details\&.
+.RE
+.PP
+\-n \fI<number>\fR
+.RS 4
+Specify max number of open files\&.
+.sp
+Only available on Linux\&.
+.RE
+.PP
+\-i \fI<interface>\fR
+.RS 4
+Send traffic through specific network interface\&.
+.sp
+For example, there are three interfaces in your device, which is lo (127\&.0\&.0\&.1), eth0 (192\&.168\&.0\&.1) and eth1 (192\&.168\&.0\&.2)\&. Meanwhile, you configure
+\fBss\-server\fR
+to listen on 0\&.0\&.0\&.0:8388 and bind to eth1\&. That results the traffic go out through eth1, but not lo nor eth0\&. This option is useful to control traffic in multi\-interface environment\&.
+.RE
+.PP
+\-b \fI<local_address>\fR
+.RS 4
+Specify local address to bind\&.
+.RE
+.PP
+\-u
+.RS 4
+Enable UDP relay\&.
+.RE
+.PP
+\-U
+.RS 4
+Enable UDP relay and disable TCP relay\&.
+.RE
+.PP
+\-A
+.RS 4
+Enable onetime authentication\&.
+.RE
+.PP
+\-6
+.RS 4
+Resovle hostname to IPv6 address first\&.
+.RE
+.PP
+\-d \fI<addr>\fR
+.RS 4
+Setup name servers for internal DNS resolver (libudns)\&. The default server is fetched from
+\fI/etc/resolv\&.conf\fR\&.
+.RE
+.PP
+\-\-fast\-open
+.RS 4
+Enable TCP fast open\&.
+.sp
+Only available with Linux kernel > 3\&.7\&.0\&.
+.RE
+.PP
+\-\-acl \fI<acl_config>\fR
+.RS 4
+Enable ACL (Access Control List) and specify config file\&.
+.RE
+.PP
+\-\-manager\-address \fI<path_to_unix_domain>\fR
+.RS 4
+Specify UNIX domain socket address for the communication between ss\-manager(1) and ss\-server(1)\&.
+.sp
+Only available in server and manager mode\&.
+.RE
+.PP
+\-\-mtu \fI<MTU>\fR
+.RS 4
+Specify the MTU of your network interface\&.
+.RE
+.PP
+\-\-mptcp
+.RS 4
+Enable Multipath TCP\&.
+.sp
+Only available with MPTCP enabled Linux kernel\&.
+.RE
+.PP
+\-v
+.RS 4
+Enable verbose mode\&.
+.RE
+.PP
+\-h|\-\-help
+.RS 4
+Print help message\&.
+.RE
+.SH "EXAMPLE"
+.sp
+It is recommended to use a config file when starting \fBss\-server\fR(1)\&.
+.sp
+The config file is written in JSON and is easy to edit\&. Check out the \fISEE ALSO\fR section for the default path of config file\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# Start the ss\-server
+ss\-server \-c /etc/shadowsocks\-libev/config\&.json
+.fi
+.if n \{\
+.RE
+.\}
+.SH "INCOMPATIBILITY"
+.sp
+The config file of \fBshadowsocks\-libev\fR(8) is slightly different from original shadowsocks\&. In order to listen to both IPv4/IPv6 address, use the following grammar in your config json file:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{
+"server":["::0","0\&.0\&.0\&.0"],
+\&.\&.\&.
+}
+.fi
+.if n \{\
+.RE
+.\}
+.SH "SEE ALSO"
+.sp
+\fBss\-local\fR(1), \fBss\-tunnel\fR(1), \fBss\-redir\fR(1), \fBss\-manager\fR(1), \fBshadowsocks\-libev\fR(8), \fBiptables\fR(8), /etc/shadowsocks\-libev/config\&.json

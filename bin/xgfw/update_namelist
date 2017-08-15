@@ -1,0 +1,40 @@
+#!/bin/bash
+
+SCRIPT_DIR=/usr/local/xgfw
+IPSET_GFWLIST=gfwlist
+DNS_PORT=5300
+DNS=127.0.0.1
+
+deleteFile() {
+  local filePath=$1
+  if [ -f "$filePath" ]; then
+   rm "$filePath"
+  fi
+}
+
+updateFromChnroute() {
+
+}
+
+updateFromGfwlist() {
+  deleteFile $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
+  # download gfw_list.conf
+  $SCRIPT_DIR/gfwlist2dnsmasq.sh -s $IPSET_GFWLIST -p $DNS_PORT -d $DNS -o $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
+  if test -s $SCRIPT_DIR/dnsmasq.d/gfw_list.conf; then
+    cp -f $SCRIPT_DIR/dnsmasq.d/gfw_list.conf /etc/dnsmasq.d/
+    if pidof dnsmasq>/dev/null; then
+      /etc/init.d/dnsmasq restart
+    fi
+    echo "Update gfw_list.conf Success"
+  else
+    echo "Update gfw_list.conf Failed"
+  fi
+}
+
+updateDnsmasqConf() {
+  updateFromGfwlist
+  updateFromChnroute
+}
+
+[ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf 
+updateDnsmasqConf

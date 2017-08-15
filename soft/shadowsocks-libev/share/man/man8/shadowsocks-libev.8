@@ -1,0 +1,426 @@
+'\" t
+.\"     Title: shadowsocks-libev
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 11/13/2016
+.\"    Manual: Shadowsocks-libev Manual
+.\"    Source: Shadowsocks-libev 2.5.6
+.\"  Language: English
+.\"
+.TH "SHADOWSOCKS\-LIBEV" "8" "11/13/2016" "Shadowsocks\-libev 2\&.5\&.6" "Shadowsocks\-libev Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+shadowsocks-libev \- a lightweight and secure socks5 proxy
+.SH "SYNOPSIS"
+.sp
+\fBss\-local\fR|\fBss\-redir\fR|\fBss\-server\fR|\fBss\-tunnel\fR|\fBss\-manager\fR [\-s \fI<server_host>\fR] [\-p \fI<server_port>\fR] [\-l \fI<local_port>\fR] [\-k \fI<password>\fR] [\-m \fI<encrypt_method>\fR] [\-f \fI<pid_file>\fR] [\-t \fI<timeout>\fR] [\-c \fI<config_file>\fR]
+.SH "DESCRIPTION"
+.sp
+\fBShadowsocks\-libev\fR is a lightweight and secure socks5 proxy\&. It is a port of the original shadowsocks created by clowwindy\&. \fBShadowsocks\-libev\fR is written in pure C and takes advantage of \fBlibev\fR to achieve both high performance and low resource consumption\&.
+.sp
+\fBShadowsocks\-libev\fR consists of five components\&. One is \fBss\-server\fR(1) that runs on a remote server to provide secured tunnel service\&. \fBss\-local\fR(1) and \fBss\-redir\fR(1) are clients on your local machines to proxy traffic(TCP/UDP or both)\&. \fBss\-tunnel\fR(1) is a tool for local port forwarding\&.
+.sp
+While \fBss\-local\fR(1) works as a standard socks5 proxy, \fBss\-redir\fR(1) works as a transparent proxy and requires netfilter\(cqs NAT module\&. For more information, check out the \fIEXAMPLE\fR section\&.
+.sp
+\fBss\-manager\fR(1) is a controller for multi\-user management and traffic statistics, using UNIX domain socket to talk with \fBss\-server\fR(1)\&. Also, it provides a UNIX domain socket or IP based API for other software\&. About the details of this API, please refer to the \fIPROTOCOL\fR section\&.
+.SH "OPTIONS"
+.PP
+\-s \fI<server_host>\fR
+.RS 4
+Set the server\(cqs hostname or IP\&.
+.RE
+.PP
+\-l \fI<local_port>\fR
+.RS 4
+Set the local port number\&.
+.sp
+Not available in server nor manager mode\&.
+.RE
+.PP
+\-k \fI<password>\fR
+.RS 4
+Set the password\&. The server and the client should use the same password\&.
+.RE
+.PP
+\-m \fI<encrypt_method>\fR
+.RS 4
+Set the cipher\&.
+.sp
+\fBShadowsocks\-libev\fR
+accepts 21 different ciphers:
+.sp
+table, rc4, rc4\-md5, aes\-128\-cfb, aes\-192\-cfb, aes\-256\-cfb, aes\-128\-ctr, aes\-192\-ctr, aes\-256\-ctr, bf\-cfb, camellia\-128\-cfb, camellia\-192\-cfb, camellia\-256\-cfb, cast5\-cfb, des\-cfb, idea\-cfb, rc2\-cfb, seed\-cfb, salsa20, chacha20 and chacha20\-ietf\&.
+.sp
+The default cipher is
+\fIrc4\-md5\fR\&.
+.sp
+If built with PolarSSL or custom OpenSSL libraries, some of these ciphers may not work\&.
+.RE
+.PP
+\-a \fI<user_name>\fR
+.RS 4
+Run as a specific user\&.
+.RE
+.PP
+\-f \fI<pid_file>\fR
+.RS 4
+Start shadowsocks as a daemon with specific pid file\&.
+.RE
+.PP
+\-t \fI<timeout>\fR
+.RS 4
+Set the socket timeout in seconds\&. The default value is 60\&.
+.RE
+.PP
+\-c \fI<config_file>\fR
+.RS 4
+Use a configuration file\&.
+.RE
+.PP
+\-n \fI<number>\fR
+.RS 4
+Specify max number of open files\&.
+.sp
+Not available in manager mode\&.
+.sp
+Only available on Linux\&.
+.RE
+.PP
+\-i \fI<interface>\fR
+.RS 4
+Send traffic through specific network interface\&.
+.sp
+For example, there are three interfaces in your device, which is lo (127\&.0\&.0\&.1), eth0 (192\&.168\&.0\&.1) and eth1 (192\&.168\&.0\&.2)\&. Meanwhile, you configure
+\fBshadowsocks\-libev\fR
+to listen on 0\&.0\&.0\&.0:8388 and bind to eth1\&. That results the traffic go out through eth1, but not lo nor eth0\&. This option is useful to control traffic in multi\-interface environment\&.
+.sp
+Not available in redir mode\&.
+.RE
+.PP
+\-b \fI<local_address>\fR
+.RS 4
+Specify local address to bind\&.
+.sp
+Not available in server nor manager mode\&.
+.RE
+.PP
+\-u
+.RS 4
+Enable UDP relay\&.
+.sp
+TPROXY is required in redir mode\&. You may need root permission\&.
+.RE
+.PP
+\-U
+.RS 4
+Enable UDP relay and disable TCP relay\&.
+.sp
+Not available in local mode\&.
+.RE
+.PP
+\-A
+.RS 4
+Enable onetime authentication\&.
+.RE
+.PP
+\-L \fI<addr:port>\fR
+.RS 4
+Specify destination server address and port for local port forwarding\&.
+.sp
+Only available in tunnel mode\&.
+.RE
+.PP
+\-d \fI<addr>\fR
+.RS 4
+Setup name servers for internal DNS resolver (libudns)\&. The default server is fetched from /etc/resolv\&.conf\&.
+.sp
+Only available in server and manager mode\&.
+.RE
+.PP
+\-\-fast\-open
+.RS 4
+Enable TCP fast open\&.
+.sp
+Not available in redir nor tunnel mode, with Linux kernel > 3\&.7\&.0\&.
+.RE
+.PP
+\-\-acl \fI<acl_config>\fR
+.RS 4
+Enable ACL (Access Control List) and specify config file\&.
+.sp
+Not available in redir nor tunnel mode\&.
+.RE
+.PP
+\-\-manager\-address \fI<path_to_unix_domain>\fR
+.RS 4
+Specify UNIX domain socket address\&.
+.sp
+Only available in server and manager mode\&.
+.RE
+.PP
+\-\-executable \fI<path_to_server_executable>\fR
+.RS 4
+Specify the executable path of
+\fBss\-server\fR\&.
+.sp
+Only available in manager mode\&.
+.RE
+.PP
+\-v
+.RS 4
+Enable verbose mode\&.
+.RE
+.PP
+\-h|\-\-help
+.RS 4
+Print help message\&.
+.RE
+.SH "CONFIG FILE"
+.sp
+The config file is written in JSON and easy to edit\&.
+.sp
+The config file equivalent of command line options is listed as example below\&.
+.TS
+allbox tab(:);
+ltB ltB.
+T{
+Command line
+T}:T{
+JSON
+T}
+.T&
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+\-s some\&.server\&.net
+T}:T{
+.sp
+"server": "some\&.server\&.net"
+T}
+T{
+.sp
+\-s some\&.server\&.net \-p 1234 (client)
+T}:T{
+.sp
+"server": "some\&.server\&.net:1234"
+T}
+T{
+.sp
+\-p 1234 \-k "PasSworD" (server)
+T}:T{
+.sp
+"port_password": {"1234":"PasSworD"}
+T}
+T{
+.sp
+\-p 1234
+T}:T{
+.sp
+"server_port": "1234"
+T}
+T{
+.sp
+\-b 0\&.0\&.0\&.0
+T}:T{
+.sp
+"local_adress": "0\&.0\&.0\&.0"
+T}
+T{
+.sp
+\-l 4321
+T}:T{
+.sp
+"local_port": "4321"
+T}
+T{
+.sp
+\-k "PasSworD"
+T}:T{
+.sp
+"password": "PasSworD"
+T}
+T{
+.sp
+\-m "aes\-256\-cfb"
+T}:T{
+.sp
+"method": "aes\-256\-cfb"
+T}
+T{
+.sp
+\-t 60
+T}:T{
+.sp
+"timeout": 60
+T}
+T{
+.sp
+\-\-fast\-open
+T}:T{
+.sp
+"fast_open": true
+T}
+T{
+.sp
+\-A
+T}:T{
+.sp
+"auth": true
+T}
+T{
+.sp
+\-n "/etc/nofile"
+T}:T{
+.sp
+"nofile": "/etc/nofile"
+T}
+T{
+.sp
+\-d "8\&.8\&.8\&.8"
+T}:T{
+.sp
+"nameserver": "8\&.8\&.8\&.8"
+T}
+T{
+.sp
+\-L "somedns\&.net:53"
+T}:T{
+.sp
+"tunnel_address": "somedns\&.net:53"
+T}
+T{
+.sp
+\-u
+T}:T{
+.sp
+"mode": "tcp_and_udp"
+T}
+T{
+.sp
+\-U
+T}:T{
+.sp
+"mode": "udp_only"
+T}
+T{
+.sp
+no "\-u" nor "\-U" options (default)
+T}:T{
+.sp
+"mode": "tcp_only"
+T}
+.TE
+.sp 1
+.SH "EXAMPLE"
+.sp
+\fBss\-redir\fR requires netfilter\(cqs NAT function\&. Here is an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# Create new chain
+root@Wrt:~# iptables \-t nat \-N SHADOWSOCKS
+root@Wrt:~# iptables \-t mangle \-N SHADOWSOCKS
+
+# Ignore your shadowsocks server\*(Aqs addresses
+# It\*(Aqs very IMPORTANT, just be careful\&.
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 123\&.123\&.123\&.123 \-j RETURN
+
+# Ignore LANs and any other addresses you\*(Aqd like to bypass the proxy
+# See Wikipedia and RFC5735 for full list of reserved networks\&.
+# See ashi009/bestroutetb for a highly optimized CHN route list\&.
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 0\&.0\&.0\&.0/8 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 10\&.0\&.0\&.0/8 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 127\&.0\&.0\&.0/8 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 169\&.254\&.0\&.0/16 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 172\&.16\&.0\&.0/12 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 192\&.168\&.0\&.0/16 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 224\&.0\&.0\&.0/4 \-j RETURN
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-d 240\&.0\&.0\&.0/4 \-j RETURN
+
+# Anything else should be redirected to shadowsocks\*(Aqs local port
+root@Wrt:~# iptables \-t nat \-A SHADOWSOCKS \-p tcp \-j REDIRECT \-\-to\-ports 12345
+
+# Add any UDP rules
+root@Wrt:~# ip rule add fwmark 0x01/0x01 table 100
+root@Wrt:~# ip route add local 0\&.0\&.0\&.0/0 dev lo table 100
+root@Wrt:~# iptables \-t mangle \-A SHADOWSOCKS \-p udp \-\-dport 53 \-j TPROXY \-\-on\-port 12345 \-\-tproxy\-mark 0x01/0x01
+
+# Apply the rules
+root@Wrt:~# iptables \-t nat \-A PREROUTING \-p tcp \-j SHADOWSOCKS
+root@Wrt:~# iptables \-t mangle \-A PREROUTING \-j SHADOWSOCKS
+
+# Start the shadowsocks\-redir
+root@Wrt:~# ss\-redir \-u \-c /etc/config/shadowsocks\&.json \-f /var/run/shadowsocks\&.pid
+.fi
+.if n \{\
+.RE
+.\}
+.SH "PROTOCOL"
+.PP
+\fBss\-manager\fR(1) provides several APIs through UDP protocol
+.RS 4
+.PP
+Send UDP commands in the following format to the manager\-address provided to ss\-manager(1):
+.RS 4
+command: [JSON data]
+.RE
+.PP
+To add a port:
+.RS 4
+add: {"server_port": 8001, "password":"7cd308cc059"}
+.RE
+.PP
+To remove a port:
+.RS 4
+remove: {"server_port": 8001}
+.RE
+.PP
+To receive a pong:
+.RS 4
+ping
+.RE
+.PP
+Then \fBss\-manager\fR(1) will send back the traffic statistics:
+.RS 4
+stat: {"8001":11370}
+.RE
+.RE
+.SH "SEE ALSO"
+.sp
+\fBss\-local\fR(1), \fBss\-server\fR(1), \fBss\-tunnel\fR(1), \fBss\-redir\fR(1), \fBss\-manager\fR(1), \fBiptables\fR(8), /etc/shadowsocks\-libev/config\&.json

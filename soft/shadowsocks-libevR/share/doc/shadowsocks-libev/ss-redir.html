@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="AsciiDoc 8.6.9">
+<title>ss-redir(1)</title>
+</head>
+<body>
+<h1>ss-redir(1)</h1>
+<p>
+</p>
+<hr>
+<h2><a name="_name"></a>NAME</h2>
+<p>ss-redir - shadowsocks client as transparent proxy, libev port</p>
+<hr>
+<h2><a name="_synopsis"></a>SYNOPSIS</h2>
+<p><strong>ss-redir</strong>
+ [-AuUv] [-h|--help]
+ [-s <emphasis>&lt;server_host&gt;</emphasis>] [-p <emphasis>&lt;server_port&gt;</emphasis>] [-l <emphasis>&lt;local_port&gt;</emphasis>]
+ [-k <emphasis>&lt;password&gt;</emphasis>] [-m <emphasis>&lt;encrypt_method&gt;</emphasis>] [-f <emphasis>&lt;pid_file&gt;</emphasis>]
+ [-t <emphasis>&lt;timeout&gt;</emphasis>] [-c <emphasis>&lt;config_file&gt;</emphasis>] [-b <emphasis>&lt;local_address&gt;</emphasis>]
+ [-a <emphasis>&lt;user_name&gt;</emphasis>] [-n <emphasis>&lt;nofile&gt;</emphasis>] [--mtu <emphasis>&lt;MTU&gt;</emphasis>]</p>
+<hr>
+<h2><a name="_description"></a>DESCRIPTION</h2>
+<p><strong>Shadowsocks-libev</strong> is a lightweight and secure socks5 proxy.
+It is a port of the original shadowsocks created by clowwindy.
+<strong>Shadowsocks-libev</strong> is written in pure C and takes advantage of libev to
+achieve both high performance and low resource consumption.</p>
+<p><strong>Shadowsocks-libev</strong> consists of five components.
+<code>ss-redir</code>(1) works as a transparent proxy on local machines to proxy TCP
+traffic and requires netfilter&#8217;s NAT module.
+For more information, check out <code>shadowsocks-libev</code>(8) and the following
+<em>EXAMPLE</em> section.</p>
+<hr>
+<h2><a name="_options"></a>OPTIONS</h2>
+<dl>
+<dt>
+-s <emphasis>&lt;server_host&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the server&#8217;s hostname or IP.
+</p>
+</dd>
+<dt>
+-p <emphasis>&lt;server_port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the server&#8217;s port number.
+</p>
+</dd>
+<dt>
+-l <emphasis>&lt;local_port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the local port number.
+</p>
+</dd>
+<dt>
+-k <emphasis>&lt;password&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the password. The server and the client should use the same
+password.
+</p>
+</dd>
+<dt>
+-m <emphasis>&lt;encrypt_method&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the cipher.
+</p>
+<p><strong>Shadowsocks-libev</strong> accepts 21 different ciphers:</p>
+<p>table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
+aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+camellia-128-cfb, camellia-192-cfb, camellia-256-cfb, cast5-cfb, des-cfb,
+idea-cfb, rc2-cfb, seed-cfb, salsa20, chacha20 and chacha20-ietf.</p>
+<p>The default cipher is <em>rc4-md5</em>.</p>
+<p>If built with PolarSSL or custom OpenSSL libraries, some of
+these ciphers may not work.</p>
+</dd>
+<dt>
+-a <emphasis>&lt;user_name&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Run as a specific user.
+</p>
+</dd>
+<dt>
+-f <emphasis>&lt;pid_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Start shadowsocks as a daemon with specific pid file.
+</p>
+</dd>
+<dt>
+-t <emphasis>&lt;timeout&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the socket timeout in seconds. The default value is 60.
+</p>
+</dd>
+<dt>
+-c <emphasis>&lt;config_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Use a configuration file.
+</p>
+<p>Refer to <code>shadowsocks-libev</code>(8) <em>CONFIG FILE</em> section for more details.</p>
+</dd>
+<dt>
+-n <emphasis>&lt;number&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify max number of open files.
+</p>
+<p>Only available on Linux.</p>
+</dd>
+<dt>
+-b <emphasis>&lt;local_address&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify local address to bind.
+</p>
+</dd>
+<dt>
+-u
+</dt>
+<dd>
+<p>
+Enable UDP relay.
+</p>
+<p>TPROXY is required in redir mode. You may need root permission.</p>
+</dd>
+<dt>
+-U
+</dt>
+<dd>
+<p>
+Enable UDP relay and disable TCP relay.
+</p>
+</dd>
+<dt>
+-A
+</dt>
+<dd>
+<p>
+Enable onetime authentication.
+</p>
+</dd>
+<dt>
+--mtu <emphasis>&lt;MTU&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify the MTU of your network interface.
+</p>
+</dd>
+<dt>
+--mptcp
+</dt>
+<dd>
+<p>
+Enable Multipath TCP.
+</p>
+<p>Only available with MPTCP enabled Linux kernel.</p>
+</dd>
+<dt>
+-v
+</dt>
+<dd>
+<p>
+Enable verbose mode.
+</p>
+</dd>
+<dt>
+-h|--help
+</dt>
+<dd>
+<p>
+Print help message.
+</p>
+</dd>
+</dl>
+<hr>
+<h2><a name="_example"></a>EXAMPLE</h2>
+<p>ss-redir requires netfilter&#8217;s NAT function. Here is an example:</p>
+<pre><code># Create new chain
+root@Wrt:~# iptables -t nat -N SHADOWSOCKS
+
+# Ignore your shadowsocks server's addresses
+# It's very IMPORTANT, just be careful.
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 123.123.123.123 -j RETURN
+
+# Ignore LANs and any other addresses you'd like to bypass the proxy
+# See Wikipedia and RFC5735 for full list of reserved networks.
+# See ashi009/bestroutetb for a highly optimized CHN route list.
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
+
+# Anything else should be redirected to shadowsocks's local port
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports 12345
+
+# Add any UDP rules
+root@Wrt:~# ip rule add fwmark 0x01/0x01 table 100
+root@Wrt:~# ip route add local 0.0.0.0/0 dev lo table 100
+root@Wrt:~# iptables -t mangle -A SHADOWSOCKS -p udp --dport 53 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
+
+# Apply the rules
+root@Wrt:~# iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+root@Wrt:~# iptables -t mangle -A PREROUTING -j SHADOWSOCKS
+
+# Start the shadowsocks-redir
+root@Wrt:~# ss-redir -u -c /etc/config/shadowsocks.json -f /var/run/shadowsocks.pid</code></pre>
+<hr>
+<h2><a name="_see_also"></a>SEE ALSO</h2>
+<p><code>ss-local</code>(1),
+<code>ss-server</code>(1),
+<code>ss-tunnel</code>(1),
+<code>ss-manager</code>(1),
+<code>shadowsocks-libev</code>(8),
+<code>iptables</code>(8),
+/etc/shadowsocks-libev/config.json</p>
+<p></p>
+<p></p>
+<hr><p><small>
+Last updated
+ 2016-12-15 05:22:38 PST
+</small></p>
+</body>
+</html>

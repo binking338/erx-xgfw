@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="AsciiDoc 8.6.9">
+<title>shadowsocks-libev(8)</title>
+</head>
+<body>
+<h1>shadowsocks-libev(8)</h1>
+<p>
+</p>
+<hr>
+<h2><a name="_name"></a>NAME</h2>
+<p>shadowsocks-libev - a lightweight and secure socks5 proxy</p>
+<hr>
+<h2><a name="_synopsis"></a>SYNOPSIS</h2>
+<p><strong>ss-local</strong>|<strong>ss-redir</strong>|<strong>ss-server</strong>|<strong>ss-tunnel</strong>|<strong>ss-manager</strong>
+ [-s <emphasis>&lt;server_host&gt;</emphasis>] [-p <emphasis>&lt;server_port&gt;</emphasis>] [-l <emphasis>&lt;local_port&gt;</emphasis>] [-k <emphasis>&lt;password&gt;</emphasis>]
+ [-m <emphasis>&lt;encrypt_method&gt;</emphasis>] [-f <emphasis>&lt;pid_file&gt;</emphasis>] [-t <emphasis>&lt;timeout&gt;</emphasis>] [-c <emphasis>&lt;config_file&gt;</emphasis>]</p>
+<hr>
+<h2><a name="_description"></a>DESCRIPTION</h2>
+<p><strong>Shadowsocks-libev</strong> is a lightweight and secure socks5 proxy.
+It is a port of the original shadowsocks created by clowwindy.
+<strong>Shadowsocks-libev</strong> is written in pure C and takes advantage of <strong>libev</strong>
+to achieve both high performance and low resource consumption.</p>
+<p><strong>Shadowsocks-libev</strong> consists of five components. One is <code>ss-server</code>(1)
+that runs on a remote server to provide secured tunnel service.
+<code>ss-local</code>(1) and <code>ss-redir</code>(1) are clients on your local machines to proxy
+traffic(TCP/UDP or both).
+<code>ss-tunnel</code>(1) is a tool for local port forwarding.</p>
+<p>While <code>ss-local</code>(1) works as a standard socks5 proxy, <code>ss-redir</code>(1) works
+as a transparent proxy and requires netfilter&#8217;s NAT module. For more
+information, check out the <em>EXAMPLE</em> section.</p>
+<p><code>ss-manager</code>(1) is a controller for multi-user management and traffic
+statistics, using UNIX domain socket to talk with <code>ss-server</code>(1).
+Also, it provides a UNIX domain socket or IP based API for other software.
+About the details of this API, please refer to the <em>PROTOCOL</em> section.</p>
+<hr>
+<h2><a name="_options"></a>OPTIONS</h2>
+<dl>
+<dt>
+-s <emphasis>&lt;server_host&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the server&#8217;s hostname or IP.
+</p>
+</dd>
+<dt>
+-l <emphasis>&lt;local_port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the local port number.
+</p>
+<p>Not available in server nor manager mode.</p>
+</dd>
+<dt>
+-k <emphasis>&lt;password&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the password. The server and the client should use the same password.
+</p>
+</dd>
+<dt>
+-m <emphasis>&lt;encrypt_method&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the cipher.
+</p>
+<p><strong>Shadowsocks-libev</strong> accepts 21 different ciphers:</p>
+<p>table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
+aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+camellia-128-cfb, camellia-192-cfb, camellia-256-cfb, cast5-cfb, des-cfb,
+idea-cfb, rc2-cfb, seed-cfb, salsa20, chacha20 and chacha20-ietf.</p>
+<p>The default cipher is <em>rc4-md5</em>.</p>
+<p>If built with PolarSSL or custom OpenSSL libraries, some of
+these ciphers may not work.</p>
+</dd>
+<dt>
+-a <emphasis>&lt;user_name&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Run as a specific user.
+</p>
+</dd>
+<dt>
+-f <emphasis>&lt;pid_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Start shadowsocks as a daemon with specific pid file.
+</p>
+</dd>
+<dt>
+-t <emphasis>&lt;timeout&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the socket timeout in seconds. The default value is 60.
+</p>
+</dd>
+<dt>
+-c <emphasis>&lt;config_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Use a configuration file.
+</p>
+</dd>
+<dt>
+-n <emphasis>&lt;number&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify max number of open files.
+</p>
+<p>Not available in manager mode.</p>
+<p>Only available on Linux.</p>
+</dd>
+<dt>
+-i <emphasis>&lt;interface&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Send traffic through specific network interface.
+</p>
+<p>For example, there are three interfaces in your device, which is
+lo (127.0.0.1), eth0 (192.168.0.1) and eth1 (192.168.0.2).
+Meanwhile, you configure <strong>shadowsocks-libev</strong> to listen on 0.0.0.0:8388
+and bind to eth1. That results the traffic go out through eth1,
+but not lo nor eth0. This option is useful to control traffic in
+multi-interface environment.</p>
+<p>Not available in redir mode.</p>
+</dd>
+<dt>
+-b <emphasis>&lt;local_address&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify local address to bind.
+</p>
+<p>Not available in server nor manager mode.</p>
+</dd>
+<dt>
+-u
+</dt>
+<dd>
+<p>
+Enable UDP relay.
+</p>
+<p>TPROXY is required in redir mode. You may need root permission.</p>
+</dd>
+<dt>
+-U
+</dt>
+<dd>
+<p>
+Enable UDP relay and disable TCP relay.
+</p>
+<p>Not available in local mode.</p>
+</dd>
+<dt>
+-A
+</dt>
+<dd>
+<p>
+Enable onetime authentication.
+</p>
+</dd>
+<dt>
+-L <emphasis>&lt;addr:port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify destination server address and port for local port forwarding.
+</p>
+<p>Only available in tunnel mode.</p>
+</dd>
+<dt>
+-d <emphasis>&lt;addr&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Setup name servers for internal DNS resolver (libudns).
+The default server is fetched from /etc/resolv.conf.
+</p>
+<p>Only available in server and manager mode.</p>
+</dd>
+<dt>
+--fast-open
+</dt>
+<dd>
+<p>
+Enable TCP fast open.
+</p>
+<p>Not available in redir nor tunnel mode, with Linux kernel &gt; 3.7.0.</p>
+</dd>
+<dt>
+--acl <emphasis>&lt;acl_config&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Enable ACL (Access Control List) and specify config file.
+</p>
+<p>Not available in redir nor tunnel mode.</p>
+</dd>
+<dt>
+--manager-address <emphasis>&lt;path_to_unix_domain&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify UNIX domain socket address.
+</p>
+<p>Only available in server and manager mode.</p>
+</dd>
+<dt>
+--executable <emphasis>&lt;path_to_server_executable&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify the executable path of <code>ss-server</code>.
+</p>
+<p>Only available in manager mode.</p>
+</dd>
+<dt>
+-v
+</dt>
+<dd>
+<p>
+Enable verbose mode.
+</p>
+</dd>
+<dt>
+-h|--help
+</dt>
+<dd>
+<p>
+Print help message.
+</p>
+</dd>
+</dl>
+<hr>
+<h2><a name="_config_file"></a>CONFIG FILE</h2>
+<p>The config file is written in JSON and easy to edit.</p>
+<p>The config file equivalent of command line options is listed as example below.</p>
+<div>
+<table rules="all"
+width="100%"
+frame="hsides"
+cellspacing="0" cellpadding="4">
+<thead>
+<tr>
+<th align="left" width="50%" valign="top"> Command line                        </th>
+<th align="left" width="50%" valign="top"> JSON</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left" width="50%" valign="top"><p>-s some.server.net</p></td>
+<td align="left" width="50%" valign="top"><p>"server": "some.server.net"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-s some.server.net -p 1234 (client)</p></td>
+<td align="left" width="50%" valign="top"><p>"server": "some.server.net:1234"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-p 1234 -k "PasSworD" (server)</p></td>
+<td align="left" width="50%" valign="top"><p>"port_password": {"1234":"PasSworD"}</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-p 1234</p></td>
+<td align="left" width="50%" valign="top"><p>"server_port": "1234"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-b 0.0.0.0</p></td>
+<td align="left" width="50%" valign="top"><p>"local_adress": "0.0.0.0"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-l 4321</p></td>
+<td align="left" width="50%" valign="top"><p>"local_port": "4321"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-k "PasSworD"</p></td>
+<td align="left" width="50%" valign="top"><p>"password": "PasSworD"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-m "aes-256-cfb"</p></td>
+<td align="left" width="50%" valign="top"><p>"method": "aes-256-cfb"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-t 60</p></td>
+<td align="left" width="50%" valign="top"><p>"timeout": 60</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>--fast-open</p></td>
+<td align="left" width="50%" valign="top"><p>"fast_open": true</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-A</p></td>
+<td align="left" width="50%" valign="top"><p>"auth": true</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-n "/etc/nofile"</p></td>
+<td align="left" width="50%" valign="top"><p>"nofile": "/etc/nofile"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-d "8.8.8.8"</p></td>
+<td align="left" width="50%" valign="top"><p>"nameserver": "8.8.8.8"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-L "somedns.net:53"</p></td>
+<td align="left" width="50%" valign="top"><p>"tunnel_address": "somedns.net:53"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-u</p></td>
+<td align="left" width="50%" valign="top"><p>"mode": "tcp_and_udp"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>-U</p></td>
+<td align="left" width="50%" valign="top"><p>"mode": "udp_only"</p></td>
+</tr>
+<tr>
+<td align="left" width="50%" valign="top"><p>no "-u" nor "-U" options (default)</p></td>
+<td align="left" width="50%" valign="top"><p>"mode": "tcp_only"</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2><a name="_example"></a>EXAMPLE</h2>
+<p><code>ss-redir</code> requires netfilter&#8217;s NAT function. Here is an example:</p>
+<pre><code># Create new chain
+root@Wrt:~# iptables -t nat -N SHADOWSOCKS
+root@Wrt:~# iptables -t mangle -N SHADOWSOCKS
+
+# Ignore your shadowsocks server's addresses
+# It's very IMPORTANT, just be careful.
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 123.123.123.123 -j RETURN
+
+# Ignore LANs and any other addresses you'd like to bypass the proxy
+# See Wikipedia and RFC5735 for full list of reserved networks.
+# See ashi009/bestroutetb for a highly optimized CHN route list.
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 10.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 127.0.0.0/8 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 169.254.0.0/16 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 172.16.0.0/12 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 192.168.0.0/16 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
+
+# Anything else should be redirected to shadowsocks's local port
+root@Wrt:~# iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports 12345
+
+# Add any UDP rules
+root@Wrt:~# ip rule add fwmark 0x01/0x01 table 100
+root@Wrt:~# ip route add local 0.0.0.0/0 dev lo table 100
+root@Wrt:~# iptables -t mangle -A SHADOWSOCKS -p udp --dport 53 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
+
+# Apply the rules
+root@Wrt:~# iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+root@Wrt:~# iptables -t mangle -A PREROUTING -j SHADOWSOCKS
+
+# Start the shadowsocks-redir
+root@Wrt:~# ss-redir -u -c /etc/config/shadowsocks.json -f /var/run/shadowsocks.pid</code></pre>
+<hr>
+<h2><a name="_protocol"></a>PROTOCOL</h2>
+<dl>
+<dt>
+<code>ss-manager</code>(1) provides several APIs through UDP protocol
+</dt>
+<dd>
+<dl>
+<dt>
+Send UDP commands in the following format to the manager-address provided to ss-manager(1): 
+</dt>
+<dd>
+<p>
+ command: [JSON data]
+</p>
+</dd>
+<dt>
+To add a port: 
+</dt>
+<dd>
+<p>
+ add: {"server_port": 8001, "password":"7cd308cc059"}
+</p>
+</dd>
+<dt>
+To remove a port: 
+</dt>
+<dd>
+<p>
+ remove: {"server_port": 8001}
+</p>
+</dd>
+<dt>
+To receive a pong: 
+</dt>
+<dd>
+<p>
+ ping
+</p>
+</dd>
+<dt>
+Then <code>ss-manager</code>(1) will send back the traffic statistics: 
+</dt>
+<dd>
+<p>
+ stat: {"8001":11370}
+</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<hr>
+<h2><a name="_see_also"></a>SEE ALSO</h2>
+<p><code>ss-local</code>(1),
+<code>ss-server</code>(1),
+<code>ss-tunnel</code>(1),
+<code>ss-redir</code>(1),
+<code>ss-manager</code>(1),
+<code>iptables</code>(8),
+/etc/shadowsocks-libev/config.json</p>
+<p></p>
+<p></p>
+<hr><p><small>
+Last updated
+ 2016-11-12 03:23:18 CST
+</small></p>
+</body>
+</html>

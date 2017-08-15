@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="AsciiDoc 8.6.9">
+<title>ss-manager(1)</title>
+</head>
+<body>
+<h1>ss-manager(1)</h1>
+<p>
+</p>
+<hr>
+<h2><a name="_name"></a>NAME</h2>
+<p>ss-manager - ss-server controller for multi-user management and traffic statistics</p>
+<hr>
+<h2><a name="_synopsis"></a>SYNOPSIS</h2>
+<p><strong>ss-manager</strong>
+ [-AuUv] [-h|--help]
+ [-s <emphasis>&lt;server_host&gt;</emphasis>] [-p <emphasis>&lt;server_port&gt;</emphasis>] [-l <emphasis>&lt;local_port&gt;</emphasis>]
+ [-k <emphasis>&lt;password&gt;</emphasis>] [-m <emphasis>&lt;encrypt_method&gt;</emphasis>] [-f <emphasis>&lt;pid_file&gt;</emphasis>]
+ [-t <emphasis>&lt;timeout&gt;</emphasis>] [-c <emphasis>&lt;config_file&gt;</emphasis>] [-i <emphasis>&lt;interface&gt;</emphasis>]
+ [-b <emphasis>&lt;local_addr&gt;</emphasis>] [-a <emphasis>&lt;user_name&gt;</emphasis>]
+ [--manager-address <emphasis>&lt;path_to_unix_domain&gt;</emphasis>]
+ [--executable <emphasis>&lt;path_to_server_executable&gt;</emphasis>]</p>
+<hr>
+<h2><a name="_description"></a>DESCRIPTION</h2>
+<p><strong>Shadowsocks-libev</strong> is a lightweight and secure socks5 proxy.
+It is a port of the original shadowsocks created by clowwindy.
+<strong>Shadowsocks-libev</strong> is written in pure C and takes advantage of libev to
+achieve both high performance and low resource consumption.</p>
+<p><strong>Shadowsocks-libev</strong> consists of five components.
+<code>ss-manager</code>(1) is a controller for multi-user management and
+traffic statistics, using UNIX domain socket to talk with <code>ss-server</code>(1).
+Also, it provides a UNIX domain socket or IP based API for other software.
+About the details of this API, please refer to the following <em>PROTOCOL</em>
+section.</p>
+<hr>
+<h2><a name="_options"></a>OPTIONS</h2>
+<dl>
+<dt>
+-s <emphasis>&lt;server_host&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the server&#8217;s hostname or IP.
+</p>
+</dd>
+<dt>
+-k <emphasis>&lt;password&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the password. The server and the client should use the same password.
+</p>
+</dd>
+<dt>
+-m <emphasis>&lt;encrypt_method&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the cipher.
+</p>
+<p><strong>Shadowsocks-libev</strong> accepts 21 different ciphers:</p>
+<p>table, rc4, rc4-md5, aes-128-cfb, aes-192-cfb, aes-256-cfb,
+aes-128-ctr, aes-192-ctr, aes-256-ctr, bf-cfb,
+camellia-128-cfb, camellia-192-cfb, camellia-256-cfb, cast5-cfb, des-cfb,
+idea-cfb, rc2-cfb, seed-cfb, salsa20, chacha20 and chacha20-ietf.</p>
+<p>The default cipher is <em>rc4-md5</em>.</p>
+<p>If built with PolarSSL or custom OpenSSL libraries, some of
+these ciphers may not work.</p>
+</dd>
+<dt>
+-a <emphasis>&lt;user_name&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Run as a specific user.
+</p>
+</dd>
+<dt>
+-f <emphasis>&lt;pid_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Start shadowsocks as a daemon with specific pid file.
+</p>
+</dd>
+<dt>
+-t <emphasis>&lt;timeout&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Set the socket timeout in seconds. The default value is 60.
+</p>
+</dd>
+<dt>
+-c <emphasis>&lt;config_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Use a configuration file.
+</p>
+</dd>
+<dt>
+-i <emphasis>&lt;interface&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Send traffic through specific network interface.
+</p>
+<p>For example, there are three interfaces in your device,
+which is lo (127.0.0.1), eth0 (192.168.0.1) and eth1 (192.168.0.2).
+Meanwhile, you configure <code>ss-local</code> to listen on 0.0.0.0:8388 and bind to eth1.
+That results the traffic go out through eth1, but not lo nor eth0.
+This option is useful to control traffic in multi-interface environment.</p>
+</dd>
+<dt>
+-u
+</dt>
+<dd>
+<p>
+ Enable UDP relay.
+</p>
+</dd>
+<dt>
+-U
+</dt>
+<dd>
+<p>
+Enable UDP relay and disable TCP relay.
+</p>
+</dd>
+<dt>
+-A
+</dt>
+<dd>
+<p>
+Enable onetime authentication.
+</p>
+</dd>
+<dt>
+-d <emphasis>&lt;addr&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Setup name servers for internal DNS resolver (libudns).
+The default server is fetched from <code>/etc/resolv.conf</code>.
+</p>
+</dd>
+<dt>
+--fast-open
+</dt>
+<dd>
+<p>
+Enable TCP fast open.
+</p>
+<p>Only available with Linux kernel &gt; 3.7.0.</p>
+</dd>
+<dt>
+--acl <emphasis>&lt;acl_config&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Enable ACL (Access Control List) and specify config file.
+</p>
+</dd>
+<dt>
+--manager-address <emphasis>&lt;path_to_unix_domain&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify UNIX domain socket address for the communication between ss-manager(1) and ss-server(1).
+</p>
+<p>Only available in server and manager mode.</p>
+</dd>
+<dt>
+--executable <emphasis>&lt;path_to_server_executable&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Specify the executable path of ss-server.
+</p>
+<p>Only available in manager mode.</p>
+</dd>
+<dt>
+-v
+</dt>
+<dd>
+<p>
+Enable verbose mode.
+</p>
+</dd>
+<dt>
+-h|--help
+</dt>
+<dd>
+<p>
+Print help message.
+</p>
+</dd>
+</dl>
+<hr>
+<h2><a name="_protocol"></a>PROTOCOL</h2>
+<p><code>ss-manager</code>(1) provides several APIs through UDP protocol:</p>
+<dl>
+<dt>
+Send UDP commands in the following format to the manager-address provided to ss-manager(1): 
+</dt>
+<dd>
+<p>
+ command: [JSON data]
+</p>
+</dd>
+<dt>
+To add a port: 
+</dt>
+<dd>
+<p>
+ add: {"server_port": 8001, "password":"7cd308cc059"}
+</p>
+</dd>
+<dt>
+To remove a port: 
+</dt>
+<dd>
+<p>
+ remove: {"server_port": 8001}
+</p>
+</dd>
+<dt>
+To receive a pong: 
+</dt>
+<dd>
+<p>
+ ping
+</p>
+</dd>
+<dt>
+Then <code>ss-manager</code>(1) will send back the traffic statistics: 
+</dt>
+<dd>
+<p>
+ stat: {"8001":11370}
+</p>
+</dd>
+</dl>
+<hr>
+<h2><a name="_example"></a>EXAMPLE</h2>
+<p>To use <code>ss-manager</code>(1), First start it and specify necessary information.</p>
+<p>Then communicate with <code>ss-manager</code>(1) through UNIX Domain Socket using UDP
+protocol:</p>
+<pre><code># Start the manager. Arguments for ss-server will be passed to generated
+# ss-server process(es) respectively.
+ss-manager --manager-address /tmp/manager.sock --executable $(which ss-server) -s example.com -m aes-256-cfb -c /path/to/config.json
+
+# Connect to the socket. Using netcat-openbsd as an example.
+# You should use scripts or other programs for further management.
+nc -Uu /tmp/manager.sock</code></pre>
+<p>After that, you may communicate with <code>ss-manager</code>(1) as described above in the
+<em>PROTOCOL</em> section.</p>
+<hr>
+<h2><a name="_see_also"></a>SEE ALSO</h2>
+<p><code>ss-local</code>(1),
+<code>ss-server</code>(1),
+<code>ss-tunnel</code>(1),
+<code>ss-redir</code>(1),
+<code>shadowsocks-libev</code>(8),
+<code>iptables</code>(8),
+/etc/shadowsocks-libev/config.json</p>
+<p></p>
+<p></p>
+<hr><p><small>
+Last updated
+ 2016-11-12 03:23:18 CST
+</small></p>
+</body>
+</html>

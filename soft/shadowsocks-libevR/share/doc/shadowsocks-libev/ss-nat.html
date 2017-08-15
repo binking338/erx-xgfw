@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="AsciiDoc 8.6.9">
+<title>ss-nat(1)</title>
+</head>
+<body>
+<h1>ss-nat(1)</h1>
+<p>
+</p>
+<hr>
+<h2><a name="_name"></a>NAME</h2>
+<p>ss-nat - helper script to setup NAT rules for transparent proxy</p>
+<hr>
+<h2><a name="_synopsis"></a>SYNOPSIS</h2>
+<p><strong>ss-nat</strong>
+ [-ouUfh]
+ [-s <emphasis>&lt;server_ip&gt;</emphasis>] [-S <emphasis>&lt;server_ip&gt;</emphasis>] [-l <emphasis>&lt;local_port&gt;</emphasis>]
+ [-L <emphasis>&lt;local_port&gt;</emphasis>] [-i <emphasis>&lt;ip_list_file&gt;</emphasis>] [-a <emphasis>&lt;lan_ips&gt;</emphasis>]
+ [-b <emphasis>&lt;wan_ips&gt;</emphasis>] [-w <emphasis>&lt;wan_ips&gt;</emphasis>] [-e <emphasis>&lt;extra_options&gt;</emphasis>]</p>
+<hr>
+<h2><a name="_description"></a>DESCRIPTION</h2>
+<p><strong>Shadowsocks-libev</strong> is a lightweight and secure socks5 proxy.
+It is a port of the original shadowsocks created by clowwindy.
+<strong>Shadowsocks-libev</strong> is written in pure C and takes advantage of libev to
+achieve both high performance and low resource consumption.</p>
+<p><code>ss-nat</code>(1) sets up NAT rules for <code>ss-redir</code>(1) to provide traffic redirection.
+It requires netfilter&#8217;s NAT module and <code>iptables</code>(8).
+For more information, check out <code>shadowsocks-libev</code>(8) and the following
+<em>EXAMPLE</em> section.</p>
+<hr>
+<h2><a name="_options"></a>OPTIONS</h2>
+<dl>
+<dt>
+-s <emphasis>&lt;server_ip&gt;</emphasis>
+</dt>
+<dd>
+<p>
+IP address of shadowsocks remote server
+</p>
+</dd>
+<dt>
+-l <emphasis>&lt;local_port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Port number of shadowsocks local server
+</p>
+</dd>
+<dt>
+-S <emphasis>&lt;server_ip&gt;</emphasis>
+</dt>
+<dd>
+<p>
+IP address of shadowsocks remote UDP server
+</p>
+</dd>
+<dt>
+-L <emphasis>&lt;local_port&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Port number of shadowsocks local UDP server
+</p>
+</dd>
+<dt>
+-i <emphasis>&lt;ip_list_file&gt;</emphasis>
+</dt>
+<dd>
+<p>
+a file whose content is bypassed ip list
+</p>
+</dd>
+<dt>
+-a <emphasis>&lt;lan_ips&gt;</emphasis>
+</dt>
+<dd>
+<p>
+LAN IP of access control, need a prefix to define access control mode
+</p>
+</dd>
+<dt>
+-b <emphasis>&lt;wan_ips&gt;</emphasis>
+</dt>
+<dd>
+<p>
+WAN IP of will be bypassed
+</p>
+</dd>
+<dt>
+-w <emphasis>&lt;wan_ips&gt;</emphasis>
+</dt>
+<dd>
+<p>
+WAN IP of will be forwarded
+</p>
+</dd>
+<dt>
+-e <emphasis>&lt;extra_options&gt;</emphasis>
+</dt>
+<dd>
+<p>
+Extra options for iptables
+</p>
+</dd>
+<dt>
+-o
+</dt>
+<dd>
+<p>
+Apply the rules to the OUTPUT chain
+</p>
+</dd>
+<dt>
+-u
+</dt>
+<dd>
+<p>
+Enable udprelay mode, TPROXY is required
+</p>
+</dd>
+<dt>
+-U
+</dt>
+<dd>
+<p>
+Enable udprelay mode, using different IP and ports for TCP and UDP
+</p>
+</dd>
+<dt>
+-f
+</dt>
+<dd>
+<p>
+Flush the rules
+</p>
+</dd>
+<dt>
+-h
+</dt>
+<dd>
+<p>
+Show this help message and exit
+</p>
+</dd>
+</dl>
+<hr>
+<h2><a name="_example"></a>EXAMPLE</h2>
+<p><code>ss-nat</code> requires <code>iptables</code>(8). Here is an example:</p>
+<pre><code># Enable NAT rules for shadowsocks,
+# with both TCP and UDP redirection enabled,
+# and applied for both PREROUTING and OUTPUT chains
+root@Wrt:~# ss-nat -s 192.168.1.100 -l 1080 -u -o
+
+# Disable and flush all NAT rules for shadowsocks
+root@Wrt:~# ss-nat -f</code></pre>
+<hr>
+<h2><a name="_see_also"></a>SEE ALSO</h2>
+<p><code>ss-local</code>(1),
+<code>ss-server</code>(1),
+<code>ss-tunnel</code>(1),
+<code>ss-manager</code>(1),
+<code>shadowsocks-libev</code>(8),
+<code>iptables</code>(8),
+/etc/shadowsocks-libev/config.json</p>
+<p></p>
+<p></p>
+<hr><p><small>
+Last updated
+ 2016-12-15 05:22:38 PST
+</small></p>
+</body>
+</html>
