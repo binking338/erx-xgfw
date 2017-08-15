@@ -16,6 +16,10 @@ updateFromChnroute() {
 
 }
 
+updateFromCustomer(){
+
+}
+
 updateFromGfwlist() {
   deleteFile $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
   # download gfw_list.conf
@@ -33,7 +37,7 @@ updateFromGfwlist() {
 
 updateDnsmasqConf() {
   updateFromGfwlist
-  updateFromChnroute
+  updateFromCustomer
 }
 
 [ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf 
