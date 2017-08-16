@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-#===================================================================#
-#   System Required:  EdgeMax V1.9                                  #
-#   Description: Install Shadowsocks-libev For EdgeMax1.9           #
-#   Author: landvd <5586822@qq.com>                                 #
-#   Thanks: @madeye <https://github.com/madeye>                     #
-#                                                                   #
-#===================================================================#
+#======================================================================================#
+#   System Required:  EdgeMax V1.9                                                     #
+#   Description: Uninstall Shadowsocks-libev For EdgeMax1.9                            #
+#   Author: binking338 <binking338@qq.com><https://github.com/binking338>              #
+#   Thanks: landvd <5586822@qq.com>                                                    #
+#   Thanks: @madeye <https://github.com/madeye>                                        #
+#                                                                                      #
+#======================================================================================#
 /etc/init.d/ss-redir stop
 /etc/init.d/ss-tunnel stop
 /etc/init.d/x-gfw stop
