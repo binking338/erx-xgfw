@@ -25,6 +25,7 @@ rm -fr /usr/local/pcre
 rm -fr /etc/shadowsocks-libev
 rm -f /usr/bin/ss-redir
 rm -f /usr/bin/ss-tunnel
+rm -f /usr/bin/ss-conf
 rm -fr /usr/bin/xgfw
 echo "Uninstall Service Success"
 
