@@ -2,8 +2,8 @@
 
 SCRIPT_DIR=/usr/local/xgfw
 IPSET_GFWLIST=gfwlist
-DNS_PORT=5300
-DNS=127.0.0.1
+DNS_PORT=53
+DNS=8.8.8.8
 
 deleteFile() {
   local filePath=$1
@@ -21,8 +21,8 @@ updateFromChnroute() {
   fi
 }
 
-updateFromCustomer(){
-
+updateFromCustomer() {                                                       
+  echo "to be continue.." 
 }
 
 updateFromGfwlist() {

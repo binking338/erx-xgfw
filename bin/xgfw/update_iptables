@@ -40,8 +40,10 @@ createSSChain() {
   iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
 
   # ingore google dns
-  iptables -t nat -A SHADOWSOCKS -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
-  iptables -t nat -A SHADOWSOCKS -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
 }
 loadChnroute() {
   # create ipset for CHNROUTE

@@ -10,10 +10,10 @@ export PATH
 #                                                                                      #
 #======================================================================================#
 /etc/init.d/ss-redir stop
-/etc/init.d/ss-tunnel stop
+#/etc/init.d/ss-tunnel stop
 /etc/init.d/x-gfw stop
 update-rc.d -f ss-redir remove
-update-rc.d -f ss-tunnel remove
+#update-rc.d -f ss-tunnel remove
 update-rc.d -f x-gfw remove
 rm -f /etc/init.d/ss-redir
 rm -f /etc/init.d/ss-tunnel

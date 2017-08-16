@@ -218,7 +218,7 @@ echo "Install Configure File  Success"
 
 cp -f -r ./bin/xgfw /usr/local/
 ln -s /usr/local/xgfw/init.d/ss-redir /etc/init.d/ss-redir
-ln -s /usr/local/xgfw/init.d/ss-tunnel /etc/init.d/ss-tunnel
+#ln -s /usr/local/xgfw/init.d/ss-tunnel /etc/init.d/ss-tunnel
 ln -s /usr/local/xgfw/init.d/x-gfw /etc/init.d/x-gfw
 cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
 ln -s /usr/local/xgfw/update_namelist /etc/cron.daily/update_namelist
@@ -234,10 +234,10 @@ sed -i "s/8388/${shadowsocksport}/g" /usr/local/xgfw/update_iptables
 /usr/local/xgfw/update_namelist
 
 update-rc.d ss-redir defaults
-update-rc.d ss-tunnel defaults
+#update-rc.d ss-tunnel defaults
 update-rc.d x-gfw defaults
 /etc/init.d/ss-redir start
-/etc/init.d/ss-tunnel start
+#/etc/init.d/ss-tunnel start
 /etc/init.d/x-gfw start
 echo "Install Service & Set Service Success"
 echo "Enjoy For SS System"
