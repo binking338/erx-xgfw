@@ -14,8 +14,6 @@ delrules() {
 
   iptables -t nat -F SHADOWSOCKS
   iptables -t nat -X SHADOWSOCKS
-
-  ipset flush gfwlist
 }
 createSSChain() {
   # create customer CHAIN SHADOWSOCKS
