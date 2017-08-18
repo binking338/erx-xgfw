@@ -2,8 +2,8 @@
 
 SCRIPT_DIR=/usr/local/xgfw
 IPSET_GFWLIST=gfwlist
-DNS_PORT=53
-DNS=8.8.8.8
+DNS_PORT=5300
+DNS=127.0.0.1
 
 deleteFile() {
   local filePath=$1
@@ -13,8 +13,15 @@ deleteFile() {
 }
 
 updateFromChnroute() {
-  curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | grep ipv4 | grep CN | awk -F\| '{ printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > $SCRIPT_DIR/chnroute/chnroute.txt
-  if test -s $SCRIPT_DIR/chnroute/chnroute.txt; then
+  curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | grep ipv4 | grep CN | awk -F\| '{ printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > $SCRIPT_DIR/chinadns/chnroute.txt
+  if test -s $SCRIPT_DIR/chinadns/chnroute.txt; then
+    cp -f $SCRIPT_DIR/chinadns/chnroute.txt /etc/chinadns/chnroute.txt
+    if pidof chinadns>/dev/null; then
+      /etc/init.d/chinadns restart
+    fi
+    for ip in $(cat '$SCRIPT_DIR/chinadns/chnroute.txt'); do
+      ipset add $IPSET_CHNROUTE $ip
+    done
     echo "Update chnroute.txt Success"
   else
     echo "Update chnroute.txt Failed"
@@ -25,15 +32,27 @@ updateFromCustomer() {
   echo "to be continue.." 
 }
 
+updateFromChinalist() {
+  deleteFile $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
+  # download accelerated-domains.china.conf
+  local DNS=114.114.114.114
+  curl 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf' > $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
+  sed -i "s|^\(server.*\)/[^/]*$|\1/$DNS|"  $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
+  if test -s $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf; then
+    cp -f $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf /etc/dnsmasq.d/
+    chmod 644 /etc/dnsmasq.d/accelerated-domains.china.conf
+    echo "Update accelerated-domains.china.conf Success"
+  else
+    echo "Update accelerated-domains.china.conf Failed"
+  fi
+}
+
 updateFromGfwlist() {
   deleteFile $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
   # download gfw_list.conf
   $SCRIPT_DIR/gfwlist2dnsmasq.sh -s $IPSET_GFWLIST -p $DNS_PORT -d $DNS -o $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
   if test -s $SCRIPT_DIR/dnsmasq.d/gfw_list.conf; then
     cp -f $SCRIPT_DIR/dnsmasq.d/gfw_list.conf /etc/dnsmasq.d/
-    if pidof dnsmasq>/dev/null; then
-      /etc/init.d/dnsmasq restart
-    fi
     echo "Update gfw_list.conf Success"
   else
     echo "Update gfw_list.conf Failed"
@@ -41,10 +60,12 @@ updateFromGfwlist() {
 }
 
 updateDnsmasqConf() {
+  updateFromChinalist
   updateFromGfwlist
   updateFromCustomer
+  if pidof dnsmasq>/dev/null; then
+    /etc/init.d/dnsmasq restart
+  fi
 }
-
-[ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf 
 updateDnsmasqConf
 updateFromChnroute

@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 config() {
     shadowsocksservice=$1
     [ -z "${shadowsocksservice}" ] && shadowsocksservice="xgfw.com"
@@ -25,7 +24,7 @@ EOF
     echo "write /etc/shadowsocks-libev/config.json success"
 }
 
-configLibevR() {
+configR() {
     shadowsocksservice=$1
     [ -z "${shadowsocksservice}" ] && shadowsocksservice="xgfw.com"
     shadowsocksport=$2
@@ -68,19 +67,20 @@ case "$1" in
     libev)
         config $2 $3 $4 $5
         /etc/init.d/ss-redir restart
-        #/etc/init.d/ss-tunnel restart
+        /etc/init.d/ss-tunnel restart
         ipset flush gfwlist
         /etc/init.d/dnsmasq restart
         ;;
     libevR)
-        config $2 $3 $4 $5 $6 $7 $8 $9
+        configR $2 $3 $4 $5 $6 $7 $8 $9
         /etc/init.d/ss-redir restart
-        #/etc/init.d/ss-tunnel restart
+        /etc/init.d/ss-tunnel restart
+        ipset flush gfwlist
         /etc/init.d/dnsmasq restart
         ;;
     *)
         echo "Usage: $0 libev server port pwd method"
-        echo "       $0 livevR server port pwd method protocol protocol_param obfs obfs_param"
+        echo "       $0 libevR server port pwd method protocol protocol_param obfs obfs_param"
         echo "       $0 help"
         exit 0
         ;;

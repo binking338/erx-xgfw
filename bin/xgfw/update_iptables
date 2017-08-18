@@ -1,11 +1,11 @@
 #!/bin/sh
 
+IPSET_BLACKLIST=blacklist
 IPSET_GFWLIST=gfwlist
 IPSET_CHNROUTE=chnroute
 SS_SERVER_PORT=8388
 SS_SERVER=fuckgfw.com
 SS_PORT=1080
-
 
 delrules() {
   # resume iptables rules
@@ -14,6 +14,12 @@ delrules() {
 
   iptables -t nat -F SHADOWSOCKS
   iptables -t nat -X SHADOWSOCKS
+  ipset flush $IPSET_GFWLIST
+  ipset destroy $IPSET_GFWLIST
+  ipset flush $IPSET_CHNROUTE
+  ipset destroy $IPSET_CHNROUTE
+  ipset flush $IPSET_BLACKLIST
+  ipset destroy $IPSET_BLACKLIST
 }
 createSSChain() {
   # create customer CHAIN SHADOWSOCKS
@@ -39,17 +45,22 @@ createSSChain() {
   iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
   iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
 
-  # ingore google dns
+  # force google dns
   iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
   iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
   iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
   iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
+
+  # force blacklist
+  ipset -N $IPSET_BLACKLIST hash:ip
+  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
 }
 loadChnroute() {
   # create ipset for CHNROUTE
   ipset -N $IPSET_CHNROUTE hash:net
   # ignore chinese ip
-  for ip in $(cat '/usr/local/xgfw/chnroute/chnroute.txt'); do
+  for ip in $(cat '/usr/local/xgfw/chinadns/chnroute.txt'); do
     ipset add $IPSET_CHNROUTE $ip
   done
 }
@@ -94,11 +105,9 @@ case "$1" in
     createSSChain
     useBothGfwlistChnroute
     ;;
-    help)
-    echo "Usage: $0 { gfwlist | chnroute | gfwlist+chnroute | del | help }"
-    ;;
     *)
-    createSSChain
-    useGfwlist
+    echo "Usage: $0 { gfwlist | chnroute | gfwlist+chnroute | del | help }"
+    echo "       ips in ipset named $IPSET_BLACKLIST will be forced using SS."
+    echo "       list command: ipset list $IPSET_BLACKLIST"
     ;;
 esac

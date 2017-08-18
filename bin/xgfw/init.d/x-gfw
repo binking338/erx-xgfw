@@ -10,6 +10,7 @@
 
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
+[ -z "${STRATEGY}" ] && STRATEGY=chnroute
 
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
@@ -18,7 +19,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 do_start() {
     if [ -d /usr/local/xgfw/ ]; then
         [ "$VERBOSE" != no ] && log_begin_msg "Running x-gfw initial script"
-        /usr/local/xgfw/update_iptables
+        /usr/local/xgfw/update_iptables chnroute
         [ "$VERBOSE" != no ] && log_end_msg 0
         return 0
     fi
@@ -43,8 +44,11 @@ case "$1" in
         echo "Error: argument '$1' not supported" >&2
         exit 3
         ;;
+    uninstall)
+        /usr/local/xgfw/uninstall
+        ;;
     *)
-        echo "Usage: $0 start|stop" >&2
+        echo "Usage: $0 start|stop|uninstall" >&2
         exit 3
         ;;
 esac

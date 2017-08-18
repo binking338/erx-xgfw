@@ -21,13 +21,17 @@ read select
 test $select = 4
 do
 case $select in
-	1)echo "You Select PPPOE"
+	1)
+    echo "You Select PPPOE"
 	break;;
-	2)echo "You Select DHCP"
+	2)
+    echo "You Select DHCP"
 	break;;
-	3)echo "You Select Static ip"
+	3)
+    echo "You Select Static ip"
 	break;;
-	4)echo "Exit Setup"
+	4)
+    echo "Exit Setup"
 	exit;;
 esac
 done
@@ -40,9 +44,11 @@ read ssver
 test $ssver = 2
 do
 case $ssver in
-	1)echo "You Select ShadowSocks"
+	1)
+    echo "You Select ShadowSocks"
 	break;;
-	2)echo "You Select ShadowSocksR"
+	2)
+    echo "You Select ShadowSocksR"
 	break;;
 esac
 done
@@ -60,8 +66,8 @@ echo "Update System libc6 Success"
 if [ $select -eq 1 ];then
     $run_cfg begin
     $run_cfg set interfaces ethernet eth0 pppoe 0 name-server none
-    #$run_cfg set service dns forwarding name-server 127.0.0.1
-    #$run_cfg set system name-server 127.0.0.1
+    $run_cfg set service dns forwarding name-server 127.0.0.1
+    $run_cfg set system name-server 127.0.0.1
     $run_cfg set system offload hwnat enable
     $run_cfg set system offload ipsec enable
     $run_cfg commit
@@ -70,8 +76,8 @@ if [ $select -eq 1 ];then
 fi
 if [ $select -eq 2 ];then
     $run_cfg begin
-    #$run_cfg set service dns forwarding name-server 127.0.0.1
-    #$run_cfg set system name-server 127.0.0.1
+    $run_cfg set service dns forwarding name-server 127.0.0.1
+    $run_cfg set system name-server 127.0.0.1
     $run_cfg set system offload hwnat enable
     $run_cfg set system offload ipsec enable
     $run_cfg commit
@@ -80,8 +86,8 @@ if [ $select -eq 2 ];then
 fi
 if [ $select -eq 3 ];then
     $run_cfg begin
-    #$run_cfg set service dns forwarding name-server 127.0.0.1
-    #$run_cfg set system name-server 127.0.0.1
+    $run_cfg set service dns forwarding name-server 127.0.0.1
+    $run_cfg set system name-server 127.0.0.1
     $run_cfg set system offload hwnat enable
     $run_cfg set system offload ipsec enable
     $run_cfg commit
@@ -169,6 +175,7 @@ echo
 fi
 
 echo "Install SS Start..."
+cd `dirname $0`
 if [ $ssver -eq 1 ];then
   cp -f -r ./soft/shadowsocks-libev /usr/local
   ssimpl="libev"
@@ -179,27 +186,28 @@ if [ $ssver -eq 2 ];then
 fi
 cp -f -r ./bin/xgfw /usr/local/
 cp -f -r ./soft/pcre /usr/local/
+cp -f ./uninstall.sh /usr/local/xgfw/uninstall
 
 ln -s /usr/local/shadowsocks-libev/bin/ss-redir /usr/bin/ss-redir
 ln -s /usr/local/shadowsocks-libev/bin/ss-tunnel /usr/bin/ss-tunnel
+ln -s /usr/local/xgfw/chinadns /usr/bin/chinadns
 chmod +x /usr/local/shadowsocks-libev/bin/ss-redir
 chmod +x /usr/local/shadowsocks-libev/bin/ss-tunnel
+chmod +x /usr/local/xgfw/chinadns
 
 ln -s /usr/local/xgfw/init.d/ss-redir /etc/init.d/ss-redir
-#ln -s /usr/local/xgfw/init.d/ss-tunnel /etc/init.d/ss-tunnel
+ln -s /usr/local/xgfw/init.d/ss-tunnel /etc/init.d/ss-tunnel
+ln -s /usr/local/xgfw/init.d/chinadns /etc/init.d/chinadns
 ln -s /usr/local/xgfw/init.d/x-gfw /etc/init.d/x-gfw
+ln -s /usr/local/xgfw/init.d/x-gfw /usr/bin/x-gfw
 ln -s /usr/local/xgfw/update_namelist /etc/cron.daily/update_namelist
 ln -s /usr/local/xgfw/ss-conf /usr/bin/ss-conf
-chmod +x /usr/local/xgfw/init.d/ss-redir
-chmod +x /usr/local/xgfw/init.d/ss-tunnel
-chmod +x /usr/local/xgfw/init.d/x-gfw
-chmod +x /usr/local/xgfw/gfwlist2dnsmasq.sh
-chmod +x /usr/local/xgfw/update_namelist
-chmod +x /usr/local/xgfw/update_iptables
-chmod +x /usr/local/xgfw/ss-conf
+ln -s /usr/local/xgfw/ss-blacklist /usr/bin/ss-blacklist
+chmod +x /usr/local/xgfw/init.d/*
+chmod +x /usr/local/xgfw/*
 
 update-rc.d ss-redir defaults
-#update-rc.d ss-tunnel defaults
+update-rc.d ss-tunnel defaults
 echo "Install SS Success"
 
 # config & start ss service 
@@ -210,12 +218,43 @@ sed -i "s/fuckgfw.com/${shadowsocksservice}/g" /usr/local/xgfw/update_iptables
 sed -i "s/8388/${shadowsocksport}/g" /usr/local/xgfw/update_iptables
 echo "Configure & Start SS Success"
 
+update-rc.d chinadns defaults
+# config chinadns
+cp -f -r /usr/local/xgfw/chinadns /etc/
+
 # config dnsmasq
 cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
-/usr/local/xgfw/update_namelist
+
+sed -i "s|server=.*$|server=127.0.0.1#5353|" /etc/dnsmasq.conf
+[ 0 == `grep "^server=" /etc/dnsmasq.conf|wc -l` ] && echo server=127.0.0.1#5353 >> /etc/dnsmasq.conf
+sed -i "s|# no-resolv|no-resolv|" /etc/dnsmasq.conf
+[ 0 == `grep "^no-resolv" /etc/dnsmasq.conf|wc -l` ] && echo no-resolv >> /etc/dnsmasq.conf
+[ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf
 
 update-rc.d x-gfw defaults
 /etc/init.d/x-gfw start
+
+until
+echo "do you want to update_namelist now? (y/n)"
+read select
+test $select = n
+do
+case $select in
+    y)
+    /usr/local/xgfw/update_namelist
+    break;;
+    n)
+    break;;
+esac
+done
+
 echo "--------------------------------------------------------"
 echo "Install x-gfw Success"
+echo
+x-gfw help
+echo
+ss-conf help
+echo
+ss-blacklist help
+echo
 echo "Enjoy!"

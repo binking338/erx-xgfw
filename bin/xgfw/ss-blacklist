@@ -1,0 +1,53 @@
+#!/bin/sh
+
+CONFIG_FILE=/etc/dnsmasq.d/ss-blacklist.conf
+IPSET_BLACKLIST="blacklist"
+DNS_PORT=5300
+DNS=127.0.0.1
+
+promote() {
+    until
+    echo "$1 (y/n)"
+    read select
+    test $select = n
+    do
+    case $select in
+        y)
+        $2
+        break;;
+        n)
+        $3
+        break;;
+    esac
+    done
+}
+
+case "$1" in
+    add)
+        if [ -n "$2" ]; then
+            sed -i "s|#server=/$2/$DNS#$DNS_PORT|server=/$2/$DNS#$DNS_PORT|" $CONFIG_FILE
+            sed -i "s|#ipset=/$2/$IPSET_BLACKLIST|ipset=/$2/$IPSET_BLACKLIST|" $CONFIG_FILE
+            
+            [ 0 == `grep "^server=/$2/" $CONFIG_FILE|wc -l` ] && echo "server=/$2/$DNS#$DNS_PORT" >> $CONFIG_FILE
+            [ 0 == `grep "^ipset=/$2/" $CONFIG_FILE|wc -l` ] && echo "ipset=/$2/$IPSET_BLACKLIST" >> $CONFIG_FILE
+            echo "$2 added!"
+
+            promote "restart dnsmasq?" "/etc/init.d/dnsmasq restart"
+        fi
+        ;;
+    remove)
+        if [ -n "$2" ]; then
+            sed -i "s|server=/$2/$DNS#$DNS_PORT|#server=/$2/$DNS#$DNS_PORT|" $CONFIG_FILE
+            sed -i "s|ipset=/$2/$IPSET_BLACKLIST|#ipset=/$2/$IPSET_BLACKLIST|" $CONFIG_FILE
+            echo "$2 removed!"
+            
+            promote "restart dnsmasq?" "/etc/init.d/dnsmasq restart"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 add abc.domain"
+        echo "       $0 remove abc.domain"
+        echo "       $0 help"
+        exit 0
+        ;;
+esac
