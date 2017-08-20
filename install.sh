@@ -203,6 +203,7 @@ ln -s /usr/local/xgfw/init.d/x-gfw /usr/bin/x-gfw
 ln -s /usr/local/xgfw/update_namelist /etc/cron.daily/update_namelist
 ln -s /usr/local/xgfw/ss-conf /usr/bin/ss-conf
 ln -s /usr/local/xgfw/ss-blacklist /usr/bin/ss-blacklist
+ln -s /usr/local/xgfw/ss-whitelist /usr/bin/ss-whitelist
 chmod +x /usr/local/xgfw/init.d/*
 chmod +x /usr/local/xgfw/*
 
@@ -224,12 +225,6 @@ cp -f -r /usr/local/xgfw/chinadns /etc/
 
 # config dnsmasq
 cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
-
-sed -i "s|server=.*$|server=127.0.0.1#5353|" /etc/dnsmasq.conf
-[ 0 == `grep "^server=" /etc/dnsmasq.conf|wc -l` ] && echo server=127.0.0.1#5353 >> /etc/dnsmasq.conf
-sed -i "s|# no-resolv|no-resolv|" /etc/dnsmasq.conf
-[ 0 == `grep "^no-resolv" /etc/dnsmasq.conf|wc -l` ] && echo no-resolv >> /etc/dnsmasq.conf
-[ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf
 
 update-rc.d x-gfw defaults
 /etc/init.d/x-gfw start
@@ -256,5 +251,7 @@ echo
 ss-conf help
 echo
 ss-blacklist help
+echo
+ss-whitelist help
 echo
 echo "Enjoy!"

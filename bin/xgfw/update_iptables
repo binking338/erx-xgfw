@@ -1,5 +1,6 @@
 #!/bin/sh
 
+IPSET_WHITELIST=whitelist
 IPSET_BLACKLIST=blacklist
 IPSET_GFWLIST=gfwlist
 IPSET_CHNROUTE=chnroute
@@ -20,6 +21,8 @@ delrules() {
   ipset destroy $IPSET_CHNROUTE
   ipset flush $IPSET_BLACKLIST
   ipset destroy $IPSET_BLACKLIST
+  ipset flush $IPSET_WHITELIST
+  ipset destroy $IPSET_WHITELIST
 }
 createSSChain() {
   # create customer CHAIN SHADOWSOCKS
@@ -51,6 +54,11 @@ createSSChain() {
   iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
   iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
 
+  # ignore whitelist
+  ipset -N $IPSET_WHITELIST hash:ip
+  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_WHITELIST dst -j RETURN
+  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_WHITELIST dst -j RETURN
+
   # force blacklist
   ipset -N $IPSET_BLACKLIST hash:ip
   iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
@@ -60,7 +68,7 @@ loadChnroute() {
   # create ipset for CHNROUTE
   ipset -N $IPSET_CHNROUTE hash:net
   # ignore chinese ip
-  for ip in $(cat '/usr/local/xgfw/chinadns/chnroute.txt'); do
+  for ip in $(cat '/etc/chinadns/chnroute.txt'); do
     ipset add $IPSET_CHNROUTE $ip
   done
 }
