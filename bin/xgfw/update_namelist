@@ -19,7 +19,7 @@ updateFromChnroute() {
     if pidof chinadns>/dev/null; then
       /etc/init.d/chinadns restart
     fi
-    for ip in $(cat '$SCRIPT_DIR/chinadns/chnroute.txt'); do
+    for ip in $(cat $SCRIPT_DIR'/chinadns/chnroute.txt'); do
       ipset add $IPSET_CHNROUTE $ip
     done
     echo "Update chnroute.txt Success"
