@@ -31,8 +31,6 @@ rm -f /usr/bin/chinadns
 rm -f /usr/bin/ss-conf
 rm -f /usr/bin/x-gfw
 rm -fr /usr/local/xgfw
-sed -i s/server=127.0.0.1#5353/server=114.114.114.114/ /etc/dnsmasq.conf
-sed -i "s|no-resolv|# no-resolv|" /etc/dnsmasq.conf
 echo "Uninstall Service Success"
 
 
