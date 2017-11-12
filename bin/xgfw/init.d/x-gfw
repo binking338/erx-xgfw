@@ -14,7 +14,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
-
+DNSIP=202.101.172.35
 
 do_start() {
     if [ -d /usr/local/xgfw/ ]; then
@@ -23,8 +23,9 @@ do_start() {
         [ 0 == `grep "^server=" /etc/dnsmasq.conf|wc -l` ] && echo server=127.0.0.1#5353 >> /etc/dnsmasq.conf
         sed -i "s|^# no-resolv|no-resolv|" /etc/dnsmasq.conf
         [ 0 == `grep "^no-resolv" /etc/dnsmasq.conf|wc -l` ] && echo no-resolv >> /etc/dnsmasq.conf
+        set -i "s|^# conf-dir=/etc/dnsmasq.d|conf-dir=/etc/dnsmasq.d|" /etc/dnsmasq.conf
         [ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf
-        /usr/local/xgfw/update_iptables chnroute
+        /usr/local/xgfw/update_iptables $STRATEGY
         /etc/init.d/dnsmasq restart
         [ "$VERBOSE" != no ] && log_end_msg 0
         return 0
@@ -34,8 +35,9 @@ do_stop() {
     if [ -d /usr/local/xgfw/ ]; then
         [ "$VERBOSE" != no ] && log_begin_msg "Stopping x-gfw"
         /usr/local/xgfw/update_iptables del
-        sed -i "s/server=127.0.0.1#5353/server=202.101.172.35/" /etc/dnsmasq.conf
-        sed -i "s/^no-resolv/# no-resolv/" /etc/dnsmasq.conf
+        sed -i "s|^server=127.0.0.1#5353|server=${DNSIP}|" /etc/dnsmasq.conf
+        sed -i "s|^no-resolv|# no-resolv|" /etc/dnsmasq.conf
+        sed -i "s|^conf-dir=/etc/dnsmasq.d|# conf-dir=/etc/dnsmasq.d|" /etc/dnsmasq.conf
         /etc/init.d/dnsmasq restart
         [ "$VERBOSE" != no ] && log_end_msg 0
         return 0

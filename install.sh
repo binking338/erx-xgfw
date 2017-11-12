@@ -28,7 +28,7 @@ case $select in
     echo "You Select DHCP"
 	break;;
 	3)
-    echo "You Select Static ip"
+    echo "You Select Static IP"
 	break;;
 	4)
     echo "Exit Setup"
@@ -96,6 +96,11 @@ if [ $select -eq 3 ];then
 fi
 echo "System Config Success"
 
+# set ISP DNS
+echo "Please input your ISP DNS:"
+read -p "(Default DNS: 202.101.172.35):" DNSIP
+[ -z "${DNSIP}" ] && DNSIP="202.101.172.35"
+
 # Set shadowsocks-libev config service
 echo "Please input service for shadowsocks-libev"
 read -p "(Default service: xgfw.com):" shadowsocksservice
@@ -108,8 +113,8 @@ echo
 
 # Set shadowsocks-libev config port
 echo "Please input port for shadowsocks-libev"
-read -p "(Default port: 10470):" shadowsocksport
-[ -z "${shadowsocksport}" ] && shadowsocksport="10470"
+read -p "(Default port: 8388):" shadowsocksport
+[ -z "${shadowsocksport}" ] && shadowsocksport="8388"
 echo
 echo "---------------------------"
 echo "shadowsocksport = ${shadowsocksport}"
@@ -174,7 +179,7 @@ echo "---------------------------"
 echo
 fi
 
-echo "Install SS Start..."
+echo "Copy files Start..."
 cd `dirname $0`
 if [ $ssver -eq 1 ];then
   cp -f -r ./soft/shadowsocks-libev /usr/local
@@ -206,27 +211,31 @@ ln -s /usr/local/xgfw/ss-blacklist /usr/bin/ss-blacklist
 ln -s /usr/local/xgfw/ss-whitelist /usr/bin/ss-whitelist
 chmod +x /usr/local/xgfw/init.d/*
 chmod +x /usr/local/xgfw/*
-
-update-rc.d ss-redir defaults
-update-rc.d ss-tunnel defaults
-echo "Install SS Success"
-
-# config & start ss service 
-/usr/local/xgfw/ss-conf $ssimpl $shadowsocksservice $shadowsocksport $shadowsockspwd $shadowsocksmethod $shadowsocksprotocol $shadowsocksprotocol_param $shadowsocksobfs $shadowsocksobfs_param
-
+# copy chinadns config
+cp -f -r /usr/local/xgfw/chinadns /etc/
+# copy dnsmasq config
+cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
 # config firewall rules
 sed -i "s/fuckgfw.com/${shadowsocksservice}/g" /usr/local/xgfw/update_iptables
 sed -i "s/8388/${shadowsocksport}/g" /usr/local/xgfw/update_iptables
+
+update-rc.d ss-redir defaults
+update-rc.d ss-tunnel defaults
+update-rc.d chinadns defaults
+update-rc.d x-gfw defaults
+echo "Copy files Success"
+
+# config & start chinadns service
+set -i "s/202.101.172.35/${DNSIP}/" /usr/local/xgfw/init.d/chinadns
+/etc/init.d/chinadns start
+echo "Configure & Start chinadns Success"
+
+# config & start ss service 
+/usr/local/xgfw/ss-conf $ssimpl $shadowsocksservice $shadowsocksport $shadowsockspwd $shadowsocksmethod $shadowsocksprotocol $shadowsocksprotocol_param $shadowsocksobfs $shadowsocksobfs_param
 echo "Configure & Start SS Success"
 
-update-rc.d chinadns defaults
-# config chinadns
-cp -f -r /usr/local/xgfw/chinadns /etc/
-
-# config dnsmasq
-cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
-
-update-rc.d x-gfw defaults
+# config & start x-gfw service
+set -i "s/202.101.172.35/${DNSIP}/" /usr/local/xgfw/init.d/x-gfw
 /etc/init.d/x-gfw start
 
 until
