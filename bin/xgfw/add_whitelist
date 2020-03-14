@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONFIG_FILE=/etc/dnsmasq.d/ss-whitelist.conf
+CONFIG_FILE=/etc/dnsmasq.d/whitelist.conf
 IPSET_WHITELIST="whitelist"
 DNS_PORT=53
 DNS=202.101.172.35

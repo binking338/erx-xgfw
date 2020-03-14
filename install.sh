@@ -98,8 +98,8 @@ echo "System Config Success"
 
 # set ISP DNS
 echo "Please input your ISP DNS:"
-read -p "(Default DNS: 202.101.172.35):" DNSIP
-[ -z "${DNSIP}" ] && DNSIP="202.101.172.35"
+read -p "(Default DNS: 202.101.172.35):" ISPDNS
+[ -z "${ISPDNS}" ] && ISPDNS="202.101.172.35"
 
 # Set shadowsocks-libev config service
 echo "Please input service for shadowsocks-libev"
@@ -190,15 +190,18 @@ if [ $ssver -eq 2 ];then
   ssimpl="libevR"
 fi
 cp -f -r ./bin/xgfw /usr/local/
+cp -f -r ./soft/chinadns /usr/local/
 cp -f -r ./soft/pcre /usr/local/
 cp -f ./uninstall.sh /usr/local/xgfw/uninstall
 
-ln -s /usr/local/shadowsocks-libev/bin/ss-redir /usr/bin/ss-redir
-ln -s /usr/local/shadowsocks-libev/bin/ss-tunnel /usr/bin/ss-tunnel
-ln -s /usr/local/xgfw/chinadns /usr/bin/chinadns
 chmod +x /usr/local/shadowsocks-libev/bin/ss-redir
 chmod +x /usr/local/shadowsocks-libev/bin/ss-tunnel
-chmod +x /usr/local/xgfw/chinadns
+chmod +x /usr/local/chinadns/bin/chinadns
+chmod +x /usr/local/xgfw/init.d/*
+chmod +x /usr/local/xgfw/*
+
+ln -s /usr/local/shadowsocks-libev/bin/ss-redir /usr/bin/ss-redir
+ln -s /usr/local/shadowsocks-libev/bin/ss-tunnel /usr/bin/ss-tunnel
 
 ln -s /usr/local/xgfw/init.d/ss-redir /etc/init.d/ss-redir
 ln -s /usr/local/xgfw/init.d/ss-tunnel /etc/init.d/ss-tunnel
@@ -206,15 +209,11 @@ ln -s /usr/local/xgfw/init.d/chinadns /etc/init.d/chinadns
 ln -s /usr/local/xgfw/init.d/x-gfw /etc/init.d/x-gfw
 ln -s /usr/local/xgfw/init.d/x-gfw /usr/bin/x-gfw
 ln -s /usr/local/xgfw/update_namelist /etc/cron.daily/update_namelist
-ln -s /usr/local/xgfw/ss-conf /usr/bin/ss-conf
-ln -s /usr/local/xgfw/ss-blacklist /usr/bin/ss-blacklist
-ln -s /usr/local/xgfw/ss-whitelist /usr/bin/ss-whitelist
-chmod +x /usr/local/xgfw/init.d/*
-chmod +x /usr/local/xgfw/*
+ln -s /usr/local/xgfw/ss_conf /usr/bin/ss_conf
 # copy chinadns config
 cp -f -r /usr/local/xgfw/chinadns /etc/
 # copy dnsmasq config
-cp -f /usr/local/xgfw/dnsmasq.d/*.conf /etc/dnsmasq.d/
+cp -f -r /usr/local/xgfw/dnsmasq.d /etc/
 # config firewall rules
 sed -i "s/fuckgfw.com/${shadowsocksservice}/g" /usr/local/xgfw/update_iptables
 sed -i "s/8388/${shadowsocksport}/g" /usr/local/xgfw/update_iptables
@@ -226,17 +225,22 @@ update-rc.d x-gfw defaults
 echo "Copy files Success"
 
 # config & start chinadns service
-set -i "s/202.101.172.35/${DNSIP}/" /usr/local/xgfw/init.d/chinadns
+set -i "s/202.101.172.35/${ISPDNS}/" /usr/local/xgfw/init.d/chinadns
 /etc/init.d/chinadns start
 echo "Configure & Start chinadns Success"
 
 # config & start ss service 
-/usr/local/xgfw/ss-conf $ssimpl $shadowsocksservice $shadowsocksport $shadowsockspwd $shadowsocksmethod $shadowsocksprotocol $shadowsocksprotocol_param $shadowsocksobfs $shadowsocksobfs_param
+/usr/local/xgfw/ss_conf $ssimpl $shadowsocksservice $shadowsocksport $shadowsockspwd $shadowsocksmethod $shadowsocksprotocol $shadowsocksprotocol_param $shadowsocksobfs $shadowsocksobfs_param
 echo "Configure & Start SS Success"
 
 # config & start x-gfw service
-set -i "s/202.101.172.35/${DNSIP}/" /usr/local/xgfw/init.d/x-gfw
+set -i "s/202.101.172.35/${ISPDNS}/" /usr/local/xgfw/init.d/x-gfw
 /etc/init.d/x-gfw start
+
+# config DNS
+set -i "s/202.101.172.35/${ISPDNS}/" /usr/bin/ss_whitelist
+set -i "s/202.101.172.35/${ISPDNS}/" /usr/local/xgfw/update_namelist
+
 
 until
 echo "do you want to update_namelist now? (y/n)"
@@ -257,10 +261,10 @@ echo "Install x-gfw Success"
 echo
 x-gfw help
 echo
-ss-conf help
+ss_conf help
 echo
-ss-blacklist help
+ss_blacklist help
 echo
-ss-whitelist help
+ss_whitelist help
 echo
 echo "Enjoy!"

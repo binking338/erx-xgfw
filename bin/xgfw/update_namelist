@@ -19,9 +19,10 @@ updateFromChnroute() {
     if pidof chinadns>/dev/null; then
       /etc/init.d/chinadns restart
     fi
-    for ip in $(cat $SCRIPT_DIR'/chinadns/chnroute.txt'); do
-      ipset add $IPSET_CHNROUTE $ip
-    done
+    # see update_iptables
+    # for ip in $(cat $SCRIPT_DIR'/chinadns/chnroute.txt'); do
+    #   ipset add $IPSET_CHNROUTE $ip
+    # done
     echo "Update chnroute.txt Success"
   else
     echo "Update chnroute.txt Failed"
@@ -35,9 +36,9 @@ updateFromCustomer() {
 updateFromChinalist() {
   deleteFile $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
   # download accelerated-domains.china.conf
-  local DNS=202.101.172.35
+  local ISPDNS=202.101.172.35
   curl 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf' > $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
-  sed -i "s|^\(server.*\)/[^/]*$|\1/$DNS|"  $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
+  sed -i "s|^\(server.*\)/[^/]*$|\1/$ISPDNS|"  $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf
   if test -s $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf; then
     cp -f $SCRIPT_DIR/dnsmasq.d/accelerated-domains.china.conf /etc/dnsmasq.d/
     chmod 644 /etc/dnsmasq.d/accelerated-domains.china.conf
@@ -49,6 +50,7 @@ updateFromChinalist() {
 
 updateFromGfwlist() {
   deleteFile $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
+  # https://raw.githubusercontent.com/cokebar/gfwlist2dnsmasq/master/gfwlist2dnsmasq.sh
   # download gfw_list.conf
   $SCRIPT_DIR/gfwlist2dnsmasq.sh -s $IPSET_GFWLIST -p $DNS_PORT -d $DNS -o $SCRIPT_DIR/dnsmasq.d/gfw_list.conf
   if test -s $SCRIPT_DIR/dnsmasq.d/gfw_list.conf; then

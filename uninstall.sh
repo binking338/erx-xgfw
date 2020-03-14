@@ -27,8 +27,8 @@ rm -fr /usr/local/pcre
 rm -fr /etc/shadowsocks-libev
 rm -f /usr/bin/ss-redir
 rm -f /usr/bin/ss-tunnel
-rm -f /usr/bin/chinadns
-rm -f /usr/bin/ss-conf
+rm -fr /usr/local/chinadns
+rm -f /usr/bin/ss_conf
 rm -f /usr/bin/x-gfw
 rm -fr /usr/local/xgfw
 echo "Uninstall Service Success"

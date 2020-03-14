@@ -109,12 +109,12 @@ case "$1" in
     createSSChain
     useChnroute
     ;;
-    gfwlist+chnroute)
+    both)
     createSSChain
     useBothGfwlistChnroute
     ;;
     *)
-    echo "Usage: $0 { gfwlist | chnroute | gfwlist+chnroute | del | help }"
+    echo "Usage: $0 { gfwlist | chnroute | both | del | help }"
     echo "       ips in ipset named $IPSET_BLACKLIST will be forced using SS."
     echo "       list command: ipset list $IPSET_BLACKLIST"
     ;;

@@ -14,18 +14,22 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
-DNSIP=202.101.172.35
+ISPDNS=202.101.172.35
+# 上游DNS
+UPDNS_IP=127.0.0.1#5353
+#UPDNS_IP=$ISPDNS
 
 do_start() {
     if [ -d /usr/local/xgfw/ ]; then
         [ "$VERBOSE" != no ] && log_begin_msg "Running x-gfw initial script"
-        sed -i "s|server=.*$|server=127.0.0.1#5353|" /etc/dnsmasq.conf
-        [ 0 == `grep "^server=" /etc/dnsmasq.conf|wc -l` ] && echo server=127.0.0.1#5353 >> /etc/dnsmasq.conf
+        sed -i "s|server=.*$|server=${UPDNS}|" /etc/dnsmasq.conf
+        [ 0 == `grep "^server=" /etc/dnsmasq.conf|wc -l` ] && echo server=$UPDNS >> /etc/dnsmasq.conf
         sed -i "s|^# no-resolv|no-resolv|" /etc/dnsmasq.conf
         [ 0 == `grep "^no-resolv" /etc/dnsmasq.conf|wc -l` ] && echo no-resolv >> /etc/dnsmasq.conf
         set -i "s|^# conf-dir=/etc/dnsmasq.d|conf-dir=/etc/dnsmasq.d|" /etc/dnsmasq.conf
         [ 0 == `grep "^conf-dir=" /etc/dnsmasq.conf|wc -l` ] && echo conf-dir=/etc/dnsmasq.d >> /etc/dnsmasq.conf
         /usr/local/xgfw/update_iptables $STRATEGY
+        /etc/init.d/chinadns start
         /etc/init.d/dnsmasq restart
         [ "$VERBOSE" != no ] && log_end_msg 0
         return 0
@@ -35,10 +39,11 @@ do_stop() {
     if [ -d /usr/local/xgfw/ ]; then
         [ "$VERBOSE" != no ] && log_begin_msg "Stopping x-gfw"
         /usr/local/xgfw/update_iptables del
-        sed -i "s|^server=127.0.0.1#5353|server=${DNSIP}|" /etc/dnsmasq.conf
+        sed -i "s|^server=${UPDNS}|server=${ISPDNS}|" /etc/dnsmasq.conf
         sed -i "s|^no-resolv|# no-resolv|" /etc/dnsmasq.conf
         sed -i "s|^conf-dir=/etc/dnsmasq.d|# conf-dir=/etc/dnsmasq.d|" /etc/dnsmasq.conf
         /etc/init.d/dnsmasq restart
+        /etc/init.d/chinadns stop
         [ "$VERBOSE" != no ] && log_end_msg 0
         return 0
     fi
@@ -57,6 +62,21 @@ case "$1" in
         ;;
     uninstall)
         /usr/local/xgfw/uninstall
+        ;;
+    update_namelist)
+        /usr/local/xgfw/update_namelist
+        ;;
+    update_iptables)
+        /usr/local/xgfw/update_iptables
+        ;;
+    conf)
+        /usr/local/xgfw/ss_conf $2 $3 $4 $5 $6 $7 $8 $9
+        ;;
+    blacklist|bl)
+        /usr/local/xgfw/add_blacklist $2 $3
+        ;;
+    whitelist|wl)
+        /usr/local/xgfw/add_whitelist $2 $3
         ;;
     *)
         echo "Usage: $0 start|stop|uninstall" >&2

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONFIG_FILE=/etc/dnsmasq.d/ss-blacklist.conf
+CONFIG_FILE=/etc/dnsmasq.d/blacklist.conf
 IPSET_BLACKLIST="blacklist"
 DNS_PORT=5300
 DNS=127.0.0.1
