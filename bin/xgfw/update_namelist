@@ -12,23 +12,6 @@ deleteFile() {
   fi
 }
 
-updateFromChnroute() {
-  curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | grep ipv4 | grep CN | awk -F\| '{ printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > $SCRIPT_DIR/chinadns/chnroute.txt
-  if test -s $SCRIPT_DIR/chinadns/chnroute.txt; then
-    cp -f $SCRIPT_DIR/chinadns/chnroute.txt /etc/chinadns/chnroute.txt
-    if pidof chinadns>/dev/null; then
-      /etc/init.d/chinadns restart
-    fi
-    # see update_iptables
-    # for ip in $(cat $SCRIPT_DIR'/chinadns/chnroute.txt'); do
-    #   ipset add $IPSET_CHNROUTE $ip
-    # done
-    echo "Update chnroute.txt Success"
-  else
-    echo "Update chnroute.txt Failed"
-  fi
-}
-
 updateFromCustomer() {                                                       
   echo "to be continue.." 
 }
@@ -70,4 +53,3 @@ updateDnsmasqConf() {
   fi
 }
 updateDnsmasqConf
-updateFromChnroute
