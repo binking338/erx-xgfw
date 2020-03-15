@@ -24,6 +24,19 @@ delrules() {
   ipset flush $IPSET_WHITELIST
   ipset destroy $IPSET_WHITELIST
 }
+
+ignoreWhitelist() {
+  ipset -N $IPSET_WHITELIST hash:ip
+  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_WHITELIST dst -j RETURN
+  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_WHITELIST dst -j RETURN
+}
+
+forceBlacklist() {
+  ipset -N $IPSET_BLACKLIST hash:ip
+  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
+  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
+}
+
 createSSChain() {
   # create customer CHAIN SHADOWSOCKS
   iptables -t nat -N SHADOWSOCKS
@@ -48,33 +61,20 @@ createSSChain() {
   iptables -t nat -A SHADOWSOCKS -d 224.0.0.0/4 -j RETURN
   iptables -t nat -A SHADOWSOCKS -d 240.0.0.0/4 -j RETURN
 
-  # force google dns
-  iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
-  iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.8.8 -j REDIRECT --to-port $SS_PORT
-  iptables -t nat -A SHADOWSOCKS -p tcp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
-  iptables -t nat -A SHADOWSOCKS -p udp -d 8.8.4.4 -j REDIRECT --to-port $SS_PORT
-
   # ignore whitelist
-  ipset -N $IPSET_WHITELIST hash:ip
-  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_WHITELIST dst -j RETURN
-  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_WHITELIST dst -j RETURN
+  ignoreWhitelist
 
   # force blacklist
-  ipset -N $IPSET_BLACKLIST hash:ip
-  iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
-  iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_BLACKLIST dst -j REDIRECT --to-port $SS_PORT
+  forceBlacklist
 }
-loadChnroute() {
+
+useChnroute() {
   # create ipset for CHNROUTE
   ipset -N $IPSET_CHNROUTE hash:net
   # ignore chinese ip
   for ip in $(cat '/etc/chinadns/chnroute.txt'); do
     ipset add $IPSET_CHNROUTE $ip
   done
-}
-
-useChnroute() {
-  loadChnroute
   # ignore net in chnroute
   iptables -t nat -A SHADOWSOCKS -m set --match-set $IPSET_CHNROUTE dst -j RETURN
   # redirect to shadowsocks for other nets
@@ -88,12 +88,6 @@ useGfwlist() {
   # redirect to shadowsocks for GFWLIST domains
   iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set $IPSET_GFWLIST dst -j REDIRECT --to-port $SS_PORT
   iptables -t nat -A SHADOWSOCKS -p udp -m set --match-set $IPSET_GFWLIST dst -j REDIRECT --to-port $SS_PORT
-}
-useBothGfwlistChnroute() {
-  loadChnroute
-  # ignore net in chnroute
-  iptables -t nat -A SHADOWSOCKS -m set --match-set $IPSET_CHNROUTE dst -j RETURN
-  useGfwlist
 }
 
 
@@ -109,12 +103,8 @@ case "$1" in
     createSSChain
     useChnroute
     ;;
-    both)
-    createSSChain
-    useBothGfwlistChnroute
-    ;;
     *)
-    echo "Usage: $0 { gfwlist | chnroute | both | del | help }"
+    echo "Usage: $0 { gfwlist | chnroute | del | help }"
     echo "       ips in ipset named $IPSET_BLACKLIST will be forced using SS."
     echo "       list command: ipset list $IPSET_BLACKLIST"
     ;;
