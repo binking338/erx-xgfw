@@ -39,8 +39,8 @@ do_stop() {
     if [ -d /usr/local/xgfw/ ]; then
         [ "$VERBOSE" != no ] && log_begin_msg "Stopping x-gfw"
         /usr/local/xgfw/update_iptables del
-        sed -i "s|^server=${UPDNS}|server=${ISPDNS}|" /etc/dnsmasq.conf
-        sed -i "s|^no-resolv|# no-resolv|" /etc/dnsmasq.conf
+        sed -i "s|^server=.*$|server=${ISPDNS}|" /etc/dnsmasq.conf
+        # sed -i "s|^no-resolv|# no-resolv|" /etc/dnsmasq.conf
         sed -i "s|^conf-dir=/etc/dnsmasq.d|# conf-dir=/etc/dnsmasq.d|" /etc/dnsmasq.conf
         /etc/init.d/dnsmasq restart
         /etc/init.d/chinadns stop

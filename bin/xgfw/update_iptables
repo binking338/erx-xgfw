@@ -95,16 +95,16 @@ case "$1" in
     del)
     delrules
     ;;
-    gfwlist)
+    gfwlist|gfw)
     createSSChain
     useGfwlist
     ;;
-    chnroute)
+    chnroute|chn)
     createSSChain
     useChnroute
     ;;
     *)
-    echo "Usage: $0 { gfwlist | chnroute | del | help }"
+    echo "Usage: $0 { [gfwlist|gfw] | [chnroute|chn] | del | help }"
     echo "       ips in ipset named $IPSET_BLACKLIST will be forced using SS."
     echo "       list command: ipset list $IPSET_BLACKLIST"
     ;;

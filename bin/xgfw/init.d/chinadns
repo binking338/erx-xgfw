@@ -100,12 +100,25 @@ do_restart() {
     do_start
 }
 
+do_update_chnroute() {
+  curl 'http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest' | grep ipv4 | grep CN | awk -F\| '{ printf("%s/%d\n", $4, 32-log($5)/log(2)) }' > $CONF
+  if test -s $CONF; then
+    # see update_iptables
+    # for ip in $(cat $SCRIPT_DIR'/chinadns/chnroute.txt'); do
+    #   ipset add $IPSET_CHNROUTE $ip
+    # done
+    echo "Update chnroute.txt Success"
+  else
+    echo "Update chnroute.txt Failed"
+  fi
+}
+
 case "$1" in
     start|stop|restart|status)
     do_$1
     ;;
     *)
-    echo "Usage: $0 { start | stop | restart | status }"
+    echo "Usage: $0 { start | stop | restart | status | update_chnroute}"
     RET_VAL=1
     ;;
 esac

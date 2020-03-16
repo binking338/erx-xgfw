@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
+run_cfg=/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper
+run_op=/opt/vyatta/bin/vyatta-op-cmd-wrapper
 #======================================================================================#
 #   System Required:  EdgeMax V1.9                                                     #
 #   Description: Uninstall Shadowsocks-libev For EdgeMax1.9                            #
@@ -9,6 +11,13 @@ export PATH
 #   Thanks: @madeye <https://github.com/madeye>                                        #
 #                                                                                      #
 #======================================================================================#
+$run_cfg begin
+$run_cfg delete service dns forwarding name-server
+$run_cfg delete system name-server
+$run_cfg commit
+$run_cfg save
+$run_cfg end
+
 /etc/init.d/ss-redir stop
 /etc/init.d/ss-tunnel stop
 /etc/init.d/x-gfw stop
@@ -31,6 +40,7 @@ rm -fr /usr/local/chinadns
 rm -f /usr/bin/ss_conf
 rm -f /usr/bin/x-gfw
 rm -fr /usr/local/xgfw
+
 echo "Uninstall Service Success"
 
 
