@@ -16,8 +16,8 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 . /lib/lsb/init-functions
 ISPDNS=202.101.172.35
 # 上游DNS
-UPDNS_IP=127.0.0.1#5353
-#UPDNS_IP=$ISPDNS
+UPDNS=127.0.0.1#5353
+#UPDNS=$ISPDNS
 
 do_start() {
     if [ -d /usr/local/xgfw/ ]; then
